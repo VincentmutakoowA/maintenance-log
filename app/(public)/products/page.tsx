@@ -13,7 +13,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { PRODUCT_OR_SERVICE } from '@/lib/config'
 import Link from 'next/link'
-import ProductCard from '@/components/product-card'
+import ProductCard from '@/app/(public)/products/product-card'
 import { TypeProduct } from '@/lib/types'
 import { Input } from '@/components/ui/input'
 
@@ -59,7 +59,7 @@ export default function ProductForm({ user }: { user: User | null }) {
     return (
         <div className="relative form-widget w-full max-w-7xl">
 
-            <CardHeader className='flex justify-between items-center pb-2'>
+            <CardHeader className='flex justify-between items-center p-4'>
                 <CardTitle>{PRODUCT_OR_SERVICE}</CardTitle>
                 <Input
                     type="search"

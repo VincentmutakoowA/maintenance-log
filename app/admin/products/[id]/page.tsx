@@ -1,6 +1,6 @@
 'use client'
 
-import ProductForm from "@/components/product-form"
+import ProductForm from "@/app/admin/products/product-form"
 import { useParams } from "next/navigation"
 
 export default function EditProductPage() {

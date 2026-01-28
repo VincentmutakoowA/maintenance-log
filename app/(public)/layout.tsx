@@ -1,5 +1,5 @@
-import HeaderPublic from "@/components/header-public";
-import { FooterPublic } from "@/components/footer-public";
+import HeaderPublic from "@/app/(public)/header-public";
+import { FooterPublic } from "@/app/(public)/footer-public";
 
 export default function Layout({
     children,
@@ -8,7 +8,7 @@ export default function Layout({
 }) {
     return (
         <div className="flex flex-col items-center">
-            <HeaderPublic /><div className="border-b w-full mb-4"></div>
+            <HeaderPublic /><div className="border-b w-full"></div>
             <div className="px-4 w-full flex justify-center min-h-screen">
                 {children}
             </div>

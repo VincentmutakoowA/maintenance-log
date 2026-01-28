@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button'
 import { PRODUCT_OR_SERVICE } from '@/lib/config'
 import { Plus } from 'lucide-react'
 import Link from 'next/link'
-import ProductAdminCard from '@/components/product-admin-card'
+import ProductAdminCard from '@/app/admin/products/product-card'
 import { TypeProduct } from '@/lib/types'
 
 // ...

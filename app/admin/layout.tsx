@@ -1,4 +1,4 @@
-import HeaderAdmin from "@/components/header-admin";
+import HeaderAdmin from "@/app/admin/header-admin";
 
 export default function Layout({
   children,

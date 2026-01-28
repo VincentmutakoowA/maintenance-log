@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/client'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 
-export default function Cover({
+export default function ProductCover({
     uid,
     url,
     size,
@@ -13,7 +13,7 @@ export default function Cover({
     uid: string | null
     url: string | null
     size: number
-    onUpload: (url: string) => void
+    onUpload: (url: string, path: string) => void
 }) {
     const supabase = createClient()
     const [uploading, setUploading] = useState(false)
@@ -28,12 +28,15 @@ export default function Cover({
 
             const file = event.target.files[0]
             const fileExt = file.name.split('.').pop()
-            const filePath = `${uid}-${Math.random()}.${fileExt}`
+            const filePath = `temp/${uid}-${crypto.randomUUID()}.${fileExt}`
+            console.log(file.size, file.type)
 
             const { error: uploadError } = await supabase
                 .storage
                 .from('product_cover')
-                .upload(filePath, file)
+                .upload(filePath, file, {
+                    contentType: file.type, upsert: true
+                })
 
             if (uploadError) throw uploadError
 
@@ -42,15 +45,13 @@ export default function Cover({
                 .from('product_cover')
                 .getPublicUrl(filePath)
 
-            onUpload(data.publicUrl)
+            onUpload(data.publicUrl, filePath)
         } catch (error) {
             alert('Error uploading Cover')
         } finally {
             setUploading(false)
         }
     }
-
-
 
     return (
         <div className=''>
@@ -61,13 +62,12 @@ export default function Cover({
                     src={url}
                     alt="Avatar"
                     className="avatar image bg-gray-200 rounded-4xl mx-2"
-                    style={{ height: size, width: size }}
                 />
             ) : (
-                <div className="avatar no-image" style={{ height: size, width: size }} />
+                <div className="" />
             )}
-            <div style={{ width: size }}>
-                <Button className='m-2' variant="outline">
+            <div style={{ width: size }} className=''>
+                <Button variant="outline" className='my-2'>
                     <label className="button primary block" htmlFor="single">
                         {uploading ? 'Uploading ...' : 'Upload'}
                     </label>

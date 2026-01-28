@@ -8,7 +8,7 @@ import {
     PlayCircle,
     Phone,
 } from 'lucide-react'
-import { Button } from './ui/button'
+import { Button } from '../../components/ui/button'
 import { PRODUCT_OR_SERVICE } from '@/lib/config'
 
 const products = [

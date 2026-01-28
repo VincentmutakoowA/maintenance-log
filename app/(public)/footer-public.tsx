@@ -3,7 +3,7 @@ import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
 import { Github, Twitter, Linkedin, Instagram } from "lucide-react"
 import { COMPANY_SLOGAN, LOCATION, PHONE_NUMBER, PRODUCT_OR_SERVICE, SITE_TITLE } from "@/lib/config"
-import { ThemeSwitcher } from "./kibo-ui/theme-switcher"
+import { ThemeSwitcher } from "../../components/kibo-ui/theme-switcher"
 
 export function FooterPublic() {
     return (

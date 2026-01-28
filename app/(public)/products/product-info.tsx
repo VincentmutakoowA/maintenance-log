@@ -42,18 +42,18 @@ export default function ProductInfo({ productId }: { productId?: string }) {
 
 
     return (
-        <Card className="max-w-5xl w-full mx-auto">
+        <Card className="max-w-5xl w-full mx-auto mt-4 pt-0">
 
             {coverUrl ? (
-                <Image
-
-                    src={coverUrl}
-                    loading="lazy"
-                    alt="Product Cover"
-                    className="w-ful"
-                    width={256}
-                    height={500}
-                />
+                <div className="relative w-full bg-gray-500 aspect-[20/9] md:aspect-[24/9] lg:aspect-[24/9]">
+                    <Image
+                        src={coverUrl}
+                        loading="lazy"
+                        alt="Product Cover"
+                        className="object-cover"
+                        fill
+                    />
+                </div>
             ) : (
                 <div className="avatar no-image" style={{ height: 150, width: 150 }} />
             )}
@@ -62,7 +62,11 @@ export default function ProductInfo({ productId }: { productId?: string }) {
                 <CardAction>
                     <Badge variant="secondary">{price}</Badge>
                 </CardAction>
-                <CardTitle>{name}</CardTitle>
+                <CardTitle>
+                    <h2 className="scroll-m-20  pb-2 text-3xl font-semibold tracking-tight first:mt-0">
+                        {name}
+                    </h2>
+                </CardTitle>
             </CardHeader>
 
             <CardFooter>

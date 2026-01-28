@@ -1,14 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import {
-    Menu,
-    X,
-    ChevronDown,
-    PieChart,
-} from 'lucide-react'
-import { Button } from './ui/button'
-import { PRODUCT_OR_SERVICE, SITE_TITLE } from '@/lib/config'
+import { Menu, X, ChevronDown, PieChart } from 'lucide-react'
+import { Button } from '../../components/ui/button'
+import { PRODUCT_OR_SERVICE } from '@/lib/config'
+import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from "@/components/ui/navigation-menu"
+import Link from 'next/link'
+import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogContent, DialogTrigger, DialogClose } from '@/components/ui/dialog'
 
 const products = [
     {
@@ -17,12 +15,17 @@ const products = [
         href: '/admin/careers',
         icon: PieChart,
     },
+    {
+        name: 'Clean',
+        description: 'Clean up temporary files',
+        href: '/admin/clean',
+        icon: PieChart,
+    }
 ]
-
 
 export default function HeaderAdmin() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-    const [productOpen, setProductOpen] = useState(false)
+    const [signOutOpen, setSignOutOpen] = useState(false)
     const [mobileProductOpen, setMobileProductOpen] = useState(false)
 
     return (
@@ -46,12 +49,30 @@ export default function HeaderAdmin() {
                 <div className="hidden lg:flex lg:gap-x-12">
                     <a href='/admin/products'><Button variant="ghost">{PRODUCT_OR_SERVICE}</Button></a>
                     <a href='/admin/products/featured'><Button variant="ghost">Featured</Button></a>
-                    <a href='/admin/about'><Button variant="ghost">News</Button></a>
-                    <a href='/admin/contact'><Button variant="ghost">Careers</Button></a>
+                    <a href='/admin/news'><Button variant="ghost">News</Button></a>
+                    <NavigationMenu>
+                        <NavigationMenuList>
+                            <NavigationMenuItem>
+                                <NavigationMenuTrigger>More</NavigationMenuTrigger>
+                                <NavigationMenuContent>
+                                    <ul className="right-50 w-40">
+                                        <ListItem href="/admin/career" title="Careers">
+                                            Manage Careers
+                                        </ListItem>
+                                        <ListItem href="/admin/clean" title="Clean">
+                                            Clean up temporary files
+                                        </ListItem>
+
+                                    </ul>
+                                </NavigationMenuContent>
+                            </NavigationMenuItem>
+
+                        </NavigationMenuList>
+                    </NavigationMenu>
                 </div>
 
                 <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-                    <a href='/login'><Button variant="ghost">Sign out</Button></a>
+                    <Button variant="ghost" onClick={() => setSignOutOpen(true)}>Sign out</Button>
                 </div>
             </nav>
 
@@ -92,11 +113,55 @@ export default function HeaderAdmin() {
                                 </a>
                             ))
                         }
-                        <a className="block rounded-lg px-3 py-2 font-semibold">Sign out</a>
+
+                        <Button variant="ghost" className="text-md font-bold" onClick={() => setSignOutOpen(true)}>Sign out</Button>
 
                     </div>
                 </div>
             )}
+
+            <Dialog open={signOutOpen} onOpenChange={setSignOutOpen}>
+                <DialogTrigger asChild>
+                </DialogTrigger>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Sign out</DialogTitle>
+                        <DialogDescription>
+                            Are you sure you want to sign out?
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <DialogClose asChild>
+                            <Button variant="outline" className='w-full sm:w-auto'>Cancel</Button>
+                        </DialogClose>
+                        <form action="/auth/signout" method="post">
+                            <Button className='w-full sm:w-auto' type="submit">Sign out</Button>
+                        </form>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+
         </header>
+    )
+}
+
+function ListItem({
+    title,
+    children,
+    href,
+    ...props
+}: React.ComponentPropsWithoutRef<"li"> & { href: string }) {
+    return (
+        <li {...props}>
+            <NavigationMenuLink asChild>
+                <Link href={href}>
+                    <div className="flex flex-col gap-1 text-sm">
+                        <div className="leading-none font-medium">{title}</div>
+                        <div className="text-muted-foreground line-clamp-2">{children}</div>
+                    </div>
+                </Link>
+            </NavigationMenuLink>
+        </li>
     )
 }
