@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
@@ -67,7 +67,7 @@ export default function ProductCover({
                 <div className="" />
             )}
             <div style={{ width: size }} className=''>
-                <Button variant="outline" className='my-2'>
+                <Button variant="outline" className='my-2' type='button'>
                     <label className="button primary block" htmlFor="single">
                         {uploading ? 'Uploading ...' : 'Upload'}
                     </label>

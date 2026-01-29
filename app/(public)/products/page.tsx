@@ -16,6 +16,7 @@ import Link from 'next/link'
 import ProductCard from '@/app/(public)/products/product-card'
 import { TypeProduct } from '@/lib/types'
 import { Input } from '@/components/ui/input'
+import { getAllProducts } from './actions'
 
 // ...
 
@@ -28,28 +29,11 @@ export default function ProductForm({ user }: { user: User | null }) {
 
 
     const getProducts = useCallback(async () => {
-        try {
-            setLoading(true)
 
-            const { data, error, status } = await supabase
-                .from('products')
-                .select(`id, name, price, cover_url`)
-            //.eq('id', user?.id)
-            //.single()
+        const data = await getAllProducts()
+        setProducts(data)
+        setLoading(false)
 
-            if (error && status !== 406) {
-                console.log(error)
-                throw error
-            }
-
-            if (data) {
-                setProducts(data)
-            }
-        } catch (error) {
-            console.log('Error loading Products')
-        } finally {
-            setLoading(false)
-        }
     }, [user, supabase])
 
     useEffect(() => {

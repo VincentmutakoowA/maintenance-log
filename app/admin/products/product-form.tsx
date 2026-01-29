@@ -18,8 +18,8 @@ export default function ProductForm({ productId }: { productId?: string }) {
   const [price, setPrice] = useState("")
   const [coverUrl, setCoverUrl] = useState<string | null>(null)
   const [coverPath, setCoverPath] = useState<string | null>(null)
-
   const isEdit = Boolean(productId)
+
 
   // fetch product if editing
   useEffect(() => {
@@ -39,13 +39,14 @@ export default function ProductForm({ productId }: { productId?: string }) {
 
   return (
     <Card className="max-w-xl">
+      
       <CardHeader>
         <CardTitle>{isEdit ? "Edit" : "Add"}</CardTitle>
       </CardHeader>
 
       <form action={saveProductAction}>
         {/**/}
-        <input type="hidden" name="id" value={productId ?? ""} />
+        {isEdit && ( <input type="hidden" name="id" value={productId} /> )}
         <input type="hidden" name="cover_url" value={coverUrl ?? ""} />
         <input type="hidden" name="cover_path" value={coverPath ?? ""} />
 
@@ -87,33 +88,33 @@ export default function ProductForm({ productId }: { productId?: string }) {
 
           {isEdit && (
 
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="destructive">
-                Delete
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Delete </DialogTitle>
-              </DialogHeader>
-              <DialogDescription>
-                Are you sure you want to delete this? This action cannot be undone.
-              </DialogDescription>
-              <DialogFooter>
-                <DialogClose asChild>
-                  <Button variant="outline">Cancel</Button>
-                </DialogClose>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="destructive" type="button">
+                  Delete
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Delete </DialogTitle>
+                </DialogHeader>
+                <DialogDescription>
+                  Are you sure you want to delete this? This action cannot be undone.
+                </DialogDescription>
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button variant="outline" type="button">Cancel</Button>
+                  </DialogClose>
 
-                <Button variant="destructive" onClick={async () => {
-                  setLoading(true)
-                  await deleteProductAction(productId!, coverPath)
-                  setLoading(false)
-                }} disabled={loading}>Delete</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        )}
+                  <Button variant="destructive" onClick={async () => {
+                    setLoading(true)
+                    await deleteProductAction(productId!, coverPath)
+                    setLoading(false)
+                  }} disabled={loading}>Delete</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )}
         </CardFooter>
       </form>
 

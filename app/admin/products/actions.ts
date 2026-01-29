@@ -3,13 +3,25 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 
-export async function getProductById(productId: string){
+export async function getProductById(productId: string) {
     const supabase = await createClient()
     const { data, error } = await supabase
         .from("products")
         .select("name, price, cover_url, cover_path")
         .eq("id", productId)
         .single()
+
+    if (error) {
+        throw new Error(error.message)
+    }
+    return data
+}
+
+export async function getAllProducts() {
+    const supabase = await createClient()
+    const { data, error } = await supabase
+        .from("products")
+        .select("id, name, price, cover_url")
 
     if (error) {
         throw new Error(error.message)
@@ -26,7 +38,7 @@ export async function saveProductAction(formData: FormData) {
     let coverUrl = formData.get("cover_url") as string | null
     let coverPath = formData.get("cover_path") as string | null
 
-    if(coverPath?.startsWith('temp/')) {
+    if (coverPath?.startsWith('temp/')) {
         // move cover from temp to permanent location
         const newPath = coverPath.replace('temp/', '')
         const { error: moveError } = await supabase
@@ -49,7 +61,6 @@ export async function saveProductAction(formData: FormData) {
     }
 
     const payload = {
-        id: id ?? undefined,
         name,
         price,
         cover_url: coverUrl,
@@ -57,12 +68,20 @@ export async function saveProductAction(formData: FormData) {
         updated_at: new Date().toISOString(),
     }
 
-    const { error } = await supabase
-        .from("products")
-        .upsert(payload)
+    if (id) {
+        //Update
+        const { error } = await supabase
+            .from("products")
+            .update(payload)
+            .eq("id", id)
 
-    if (error) {
-        throw new Error(error.message)
+        if (error) { throw new Error(error.message) }
+    } else {
+        //Insert without id
+        const { error } = await supabase
+            .from("products")
+            .insert(payload)
+        if (error) { throw new Error(error.message) }
     }
 
     redirect("/admin/products")

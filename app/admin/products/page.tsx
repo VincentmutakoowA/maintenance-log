@@ -16,6 +16,7 @@ import { Plus } from 'lucide-react'
 import Link from 'next/link'
 import ProductAdminCard from '@/app/admin/products/product-card'
 import { TypeProduct } from '@/lib/types'
+import { getAllProducts } from './actions'
 
 // ...
 
@@ -28,28 +29,11 @@ export default function ProductForm({ user }: { user: User | null }) {
 
 
     const getProducts = useCallback(async () => {
-        try {
-            setLoading(true)
+        
+        const data = await getAllProducts()
+        setProducts(data)
+        setLoading(false)
 
-            const { data, error, status } = await supabase
-                .from('products')
-                .select(`id, name, price, cover_url`)
-            //.eq('id', user?.id)
-            //.single()
-
-            if (error && status !== 406) {
-                console.log(error)
-                throw error
-            }
-
-            if (data) {
-                setProducts(data)
-            }
-        } catch (error) {
-            console.log('Error loading Products')
-        } finally {
-            setLoading(false)
-        }
     }, [user, supabase])
 
     useEffect(() => {
