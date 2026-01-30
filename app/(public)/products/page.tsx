@@ -17,6 +17,7 @@ import ProductCard from '@/app/(public)/products/product-card'
 import { TypeProduct } from '@/lib/types'
 import { Input } from '@/components/ui/input'
 import { getAllProducts } from './actions'
+import { Skeleton } from '@/components/ui/skeleton'
 
 // ...
 
@@ -53,14 +54,32 @@ export default function ProductForm({ user }: { user: User | null }) {
             </CardHeader>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 px-4">
-                {products.map(product => (
 
-                    <Link href={`/products/${product.id}`} key={product.id}>
-                        <ProductCard
-                            product={product}
-                        />
-                    </Link>
-                ))}
+                {loading && (
+                    <>
+                        <Card className='w-full h-64 relative'><Skeleton className="absolute inset-0 " /></Card>
+                        <Card className='w-full h-64 relative'><Skeleton className="absolute inset-0 " /></Card>
+                        <Card className='w-full h-64 relative'><Skeleton className="absolute inset-0 " /></Card>
+                        <Card className='w-full h-64 relative'><Skeleton className="absolute inset-0 " /></Card>
+
+                    </>
+                )}
+
+                {!loading && products.length === 0 && (
+                    <p className="text-center col-span-full">No {PRODUCT_OR_SERVICE.toLowerCase()} found.</p>
+                )}
+
+                {!loading && products.length > 0 && (
+                    products.map(product => (
+
+                        <Link href={`/products/${product.id}`} key={product.id}>
+                            <ProductCard
+                                product={product}
+                            />
+                        </Link>
+                    ))
+                )}
+
             </div>
 
         </div>

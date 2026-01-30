@@ -1,7 +1,8 @@
-import { Card, CardHeader, CardContent, CardFooter, CardTitle } from "../../../components/ui/card";
+import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardAction } from "../../../components/ui/card";
 import Link from 'next/link'
 import { Button } from "../../../components/ui/button";
 import { TypeProduct } from "@/lib/types";
+import ProductStatus from "@/components/status";
 
 export default function ProductAdminCard({ product }: { product: TypeProduct }) {
 
@@ -17,16 +18,18 @@ export default function ProductAdminCard({ product }: { product: TypeProduct }) 
             />
 
 
-            <CardContent className="flex justify-between items-center">
-                <div>
-                    <h3 className="font-semibold">{product.name}</h3>
-                    <p>${product.price}</p>
-                </div>
-                <Link href={`/admin/products/${product.id}`}>
-                    <Button variant="outline">Edit</Button>
-                </Link>
-            </CardContent>
-            
+            <CardHeader>
+                <CardAction className="grid gap-2">
+                    <ProductStatus status={product.availability}></ProductStatus>
+                    <Link href={`/admin/products/${product.id}`}>
+                        <Button variant="outline">Edit</Button>
+                    </Link>
+                </CardAction>
+                <CardTitle> {product.name}</CardTitle>
+                <p>${product.price}</p>
+
+            </CardHeader>
+
         </Card>
     )
 }

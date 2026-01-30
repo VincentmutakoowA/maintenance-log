@@ -1,8 +1,8 @@
-import { Card, CardHeader, CardContent, CardFooter } from "../../../components/ui/card";
-import Link from 'next/link'
+import { Card, CardHeader, CardContent, CardFooter, CardAction } from "../../../components/ui/card";
 import Image from "next/image";
-import { Button } from "../../../components/ui/button";
 import { TypeProduct } from "@/lib/types";
+import ProductStatus from "@/components/status";
+//import { AvailabilityStatus } from "@/lib/types";
 
 export default function ProductCard({ product }: { product: TypeProduct }) {
 
@@ -21,10 +21,14 @@ export default function ProductCard({ product }: { product: TypeProduct }) {
                 />
             </div>
 
-            <CardContent>
+            <CardHeader>
+                <CardAction>
+                    <ProductStatus status={product.availability}></ProductStatus>
+                </CardAction>
+
                 <h3 className="font-semibold">{product.name}</h3>
                 <p>${product.price}</p>
-            </CardContent>
+            </CardHeader>
 
         </Card>
     )

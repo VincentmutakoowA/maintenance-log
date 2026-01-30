@@ -3,7 +3,9 @@ export const PRODUCT_OR_SERVICE = "Cars"
 export const COMPANY_SLOGAN = "Your trusted partner in finding the perfect car."
 export const HERO_INTRO = "Discover your next car"
 export const LOCATION = "High street, Mbarara, Uganda"
-export const PHONE_NUMBER = "+256 789211701"
+export const PHONE_NUMBER = "+256789211701"
+export const CURRENCY = "USD"
+export const WHATSAPP_NUMBER = "256789211701"
 
 
 

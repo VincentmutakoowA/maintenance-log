@@ -9,13 +9,18 @@ import {
     Phone,
 } from 'lucide-react'
 import { Button } from '../../components/ui/button'
-import { PRODUCT_OR_SERVICE } from '@/lib/config'
+import { PHONE_NUMBER, PRODUCT_OR_SERVICE } from '@/lib/config'
 
 const products = [
     {
-        name: 'Career',
-        description: 'Find your dream job',
-        href: '/careers',
+        name: 'Contact us',
+        description: 'Contact us for more information',
+        href: '/contact',
+    },
+    {
+        name: 'Call us',
+        description: 'Get help and support',
+        href: `tel:${PHONE_NUMBER}`,
     },
 
 ]
@@ -59,7 +64,6 @@ export default function HeaderPublic() {
 
                 <div className="hidden lg:flex lg:gap-x-12">
                     <a href='/products'><Button variant="ghost">{PRODUCT_OR_SERVICE}</Button></a>
-                    <a href='/news'><Button variant="ghost">News</Button></a>
                     <a href='/about'><Button variant="ghost">About us</Button></a>
                     <a href='/contact'><Button variant="ghost">Contact</Button></a>
                 </div>
@@ -84,18 +88,16 @@ export default function HeaderPublic() {
 
                     <div className="mt-6 space-y-2">
                         <a className="block rounded-lg px-3 py-2 font-semibold" href='/products'>{PRODUCT_OR_SERVICE}</a>
-                        <a className="block rounded-lg px-3 py-2 font-semibold" href='/news'>News</a>
                         <a className="block rounded-lg px-3 py-2 font-semibold" href='/about'>About us</a>
-                        <a className="block rounded-lg px-3 py-2 font-semibold" href='/contact'>Contact</a>
                         <button
                             onClick={() => setMobileProductOpen((v) => !v)}
                             className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-base font-semibold text-gray-900 dark:text-white"
                         >
-                            Resources
+                            Contact
                             <ChevronDown className={`size-5 ${mobileProductOpen ? 'rotate-180' : ''}`} />
                         </button>
                         {mobileProductOpen &&
-                            [...products, ...callsToAction].map((item) => (
+                            [...products ].map((item) => (
                                 <a
                                     key={item.name}
                                     href={item.href}

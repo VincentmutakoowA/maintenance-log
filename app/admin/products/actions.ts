@@ -1,7 +1,7 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
-import { redirect } from "next/navigation"
+import { redirect, notFound } from "next/navigation"
 
 export async function getProductById(productId: string) {
     const supabase = await createClient()
@@ -14,6 +14,7 @@ export async function getProductById(productId: string) {
     if (error) {
         throw new Error(error.message)
     }
+    
     return data
 }
 
@@ -21,7 +22,7 @@ export async function getAllProducts() {
     const supabase = await createClient()
     const { data, error } = await supabase
         .from("products")
-        .select("id, name, price, cover_url")
+        .select("id, name, price, cover_url, availability")
 
     if (error) {
         throw new Error(error.message)
@@ -37,6 +38,7 @@ export async function saveProductAction(formData: FormData) {
     const price = parseFloat(formData.get("price") as string)
     let coverUrl = formData.get("cover_url") as string | null
     let coverPath = formData.get("cover_path") as string | null
+    let availability = formData.get("availability") as string as string | null
 
     if (coverPath?.startsWith('temp/')) {
         // move cover from temp to permanent location
@@ -66,6 +68,7 @@ export async function saveProductAction(formData: FormData) {
         cover_url: coverUrl,
         cover_path: coverPath,
         updated_at: new Date().toISOString(),
+        availability
     }
 
     if (id) {

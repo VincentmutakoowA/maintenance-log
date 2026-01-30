@@ -9,6 +9,10 @@ import ProductCover from "@/app/admin/products/product-cover"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { getProductById, saveProductAction, deleteProductAction } from "./actions"
+import ProductAvailabilitySelect from "./product-availability-select"
+import { AvailabilityStatus } from "@/lib/types"
+
+
 
 export default function ProductForm({ productId }: { productId?: string }) {
   const supabase = createClient()
@@ -18,6 +22,7 @@ export default function ProductForm({ productId }: { productId?: string }) {
   const [price, setPrice] = useState("")
   const [coverUrl, setCoverUrl] = useState<string | null>(null)
   const [coverPath, setCoverPath] = useState<string | null>(null)
+  const [availability, setAvailability] = useState<AvailabilityStatus>("available")
   const isEdit = Boolean(productId)
 
 
@@ -39,16 +44,17 @@ export default function ProductForm({ productId }: { productId?: string }) {
 
   return (
     <Card className="max-w-xl">
-      
+
       <CardHeader>
         <CardTitle>{isEdit ? "Edit" : "Add"}</CardTitle>
       </CardHeader>
 
       <form action={saveProductAction}>
         {/**/}
-        {isEdit && ( <input type="hidden" name="id" value={productId} /> )}
+        {isEdit && (<input type="hidden" name="id" value={productId} />)}
         <input type="hidden" name="cover_url" value={coverUrl ?? ""} />
         <input type="hidden" name="cover_path" value={coverPath ?? ""} />
+        <input type="hidden" name="availability" value={availability} />
 
         <CardContent className="space-y-4">
           <Input
@@ -67,6 +73,12 @@ export default function ProductForm({ productId }: { productId?: string }) {
             onChange={e => setPrice(e.target.value)}
             required
           />
+
+          <ProductAvailabilitySelect
+            availability={availability}
+            onChange={setAvailability}>
+          </ProductAvailabilitySelect>
+
 
           <Label>Cover Image</Label>
 

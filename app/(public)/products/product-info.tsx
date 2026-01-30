@@ -2,19 +2,25 @@
 
 import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
-import { Input } from "@/components/ui/input"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardAction } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardAction, CardDescription } from "@/components/ui/card"
+import ProductStatus from "@/components/status"
+import { CURRENCY, WHATSAPP_NUMBER } from "@/lib/config"
+import { Label } from "@/components/ui/label"
+import { MessageCircle } from "lucide-react"
+import { getProductById } from "./actions"
+import { AvailabilityStatus } from "@/lib/types"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export default function ProductInfo({ productId }: { productId?: string }) {
     const supabase = createClient()
 
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(true)
     const [name, setName] = useState("")
     const [price, setPrice] = useState("")
     const [coverUrl, setCoverUrl] = useState<string | null>(null)
+    const [status, setStatus] = useState<AvailabilityStatus>("available")
 
     const isEdit = Boolean(productId)
 
@@ -23,29 +29,35 @@ export default function ProductInfo({ productId }: { productId?: string }) {
         if (!productId) return
 
         const loadProduct = async () => {
-            const { data } = await supabase
-                .from("products")
-                .select("name, price, cover_url")
-                .eq("id", productId)
-                .single()
 
+            const data = await getProductById(productId)
             if (data) {
                 setName(data.name)
                 setPrice(String(data.price))
                 setCoverUrl(data.cover_url)
-                //console.log("Image url ", coverUrl)
+                setStatus(data.availability)
             }
         }
 
         loadProduct()
+            .finally(() => setLoading(false))
     }, [productId, supabase])
+
+    function WhatsAppMessage() {
+        const message = `Hello, I am interested in ${name} priced at ${CURRENCY} ${price}, could you provide more details?`
+        const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`
+        window.open(whatsappUrl, '_blank')
+    }
+
+    //coverUrl
+    //const falseii = false
 
 
     return (
         <Card className="max-w-5xl w-full mx-auto mt-4 pt-0">
 
             {coverUrl ? (
-                <div className="relative w-full bg-gray-500 aspect-[20/9] md:aspect-[24/9] lg:aspect-[24/9]">
+                <div className="relative w-full aspect-[20/9] md:aspect-[24/9] lg:aspect-[24/9]">
                     <Image
                         src={coverUrl}
                         loading="lazy"
@@ -55,26 +67,48 @@ export default function ProductInfo({ productId }: { productId?: string }) {
                     />
                 </div>
             ) : (
-                <div className="avatar no-image" style={{ height: 150, width: 150 }} />
+                <div className="relative w-full aspect-[20/9] md:aspect-[24/9] lg:aspect-[24/9]">
+                    <Skeleton className="absolute inset-0 w-full h-full" />
+                </div>
             )}
 
             <CardHeader>
                 <CardAction>
-                    <Badge variant="secondary">{price}</Badge>
+                    {loading ? <Skeleton className="h-6 w-24" /> : <ProductStatus status={status}></ProductStatus>}
                 </CardAction>
                 <CardTitle>
                     <h2 className="scroll-m-20  pb-2 text-3xl font-semibold tracking-tight first:mt-0">
-                        {name}
+                        {name || (<Skeleton className="h-8 w-1/3 " />)}
                     </h2>
                 </CardTitle>
+
+
             </CardHeader>
 
-            <CardFooter>
-                <Button className="w-full sm:w-auto" >
-                    Message
-                </Button>
+            <CardContent className="grid gap-6">
+
+
+                <div className="grid gap-2">
+                    {loading ? <Skeleton className="h-4 w-48" /> : <Label>Description</Label>}
+                    <CardDescription>
+                        {loading ? <Skeleton className="h-20 w-full" /> : "This is a detailed description of the product. It provides all the necessary information that a potential buyer would need to make an informed decision about purchasing the product."}
+                    </CardDescription>
+                </div>
+
+            </CardContent>
+
+            <CardFooter className="grid gap-2 grid-cols-1 sm:grid-cols-2">
+                <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
+                    {loading ? <Skeleton className="h-6 w-24" /> : `${CURRENCY} ${price}`}
+                </h4>
+                {loading ? <Skeleton className="h-10 w-full sm:w-auto" /> : <Button className="w-full sm:w-auto" onClick={WhatsAppMessage}>
+                    <MessageCircle className="ml-2 h-4 w-4" />
+                    Whats App
+                </Button>}
             </CardFooter>
 
         </Card>
     )
+
 }
+

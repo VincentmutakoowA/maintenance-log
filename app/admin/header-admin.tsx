@@ -10,12 +10,6 @@ import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogFooter, Dia
 
 const products = [
     {
-        name: 'Careers',
-        description: 'Get hired',
-        href: '/admin/careers',
-        icon: PieChart,
-    },
-    {
         name: 'Clean',
         description: 'Clean up temporary files',
         href: '/admin/clean',
@@ -49,16 +43,13 @@ export default function HeaderAdmin() {
                 <div className="hidden lg:flex lg:gap-x-12">
                     <a href='/admin/products'><Button variant="ghost">{PRODUCT_OR_SERVICE}</Button></a>
                     <a href='/admin/products/featured'><Button variant="ghost">Featured</Button></a>
-                    <a href='/admin/news'><Button variant="ghost">News</Button></a>
                     <NavigationMenu>
                         <NavigationMenuList>
                             <NavigationMenuItem>
                                 <NavigationMenuTrigger>More</NavigationMenuTrigger>
                                 <NavigationMenuContent>
                                     <ul className="right-50 w-40">
-                                        <ListItem href="/admin/career" title="Careers">
-                                            Manage Careers
-                                        </ListItem>
+
                                         <ListItem href="/admin/clean" title="Clean">
                                             Clean up temporary files
                                         </ListItem>
@@ -93,7 +84,6 @@ export default function HeaderAdmin() {
 
                         <a className="block rounded-lg px-3 py-2 font-semibold" href='/admin/products'>{PRODUCT_OR_SERVICE}</a>
                         <a className="block rounded-lg px-3 py-2 font-semibold" href='/admin/products/featured'>Featured</a>
-                        <a className="block rounded-lg px-3 py-2 font-semibold" href='/admin/news'>News</a>
 
                         <button
                             onClick={() => setMobileProductOpen((v) => !v)}

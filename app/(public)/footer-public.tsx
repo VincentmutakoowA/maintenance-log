@@ -24,7 +24,6 @@ export function FooterPublic() {
                         <ul className="space-y-2 text-sm text-muted-foreground">
                             <li><Link href="/">Home</Link></li>
                             <li><Link href="/products">{PRODUCT_OR_SERVICE}</Link></li>
-                            <li><Link href="/news">News</Link></li>
                             <li><Link href="/about">About</Link></li>
                             <li><Link href="/contact">Contact</Link></li>
                         </ul>
@@ -34,7 +33,6 @@ export function FooterPublic() {
                     <div className="space-y-3">
                         <h4 className="text-sm font-semibold">Resources</h4>
                         <ul className="space-y-2 text-sm text-muted-foreground">
-                            <li><Link href="/careers">Careers</Link></li>
                             <li><Link href="/privacy">Privacy Policy</Link></li>
                             <li><Link href="/terms">Terms of Service</Link></li>
                             <hr></hr>
