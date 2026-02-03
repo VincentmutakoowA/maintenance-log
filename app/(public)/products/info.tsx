@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardAction, CardDescription } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardAction, CardDescription } from "@/components/ui/card"
 import ProductStatus from "@/components/status"
 import { CURRENCY, WHATSAPP_NUMBER } from "@/lib/config"
 import { Label } from "@/components/ui/label"
@@ -12,6 +12,8 @@ import { MessageCircle } from "lucide-react"
 import { getProductById } from "./actions"
 import { AvailabilityStatus } from "@/lib/types"
 import { Skeleton } from "@/components/ui/skeleton"
+import MediaSection from "./media-section"
+import ShareButton from "./share"
 
 export default function ProductInfo({ productId }: { productId?: string }) {
     const supabase = createClient()
@@ -21,8 +23,9 @@ export default function ProductInfo({ productId }: { productId?: string }) {
     const [price, setPrice] = useState("")
     const [coverUrl, setCoverUrl] = useState<string | null>(null)
     const [status, setStatus] = useState<AvailabilityStatus>("available")
-
-    const isEdit = Boolean(productId)
+    const [description, setDescription] = useState<string | null>(null)
+    const [imagesUrls, setImagesUrls] = useState<string[]>([])
+    const [videosUrls, setVideosUrls] = useState<string[]>([])
 
     // fetch product if editing
     useEffect(() => {
@@ -36,6 +39,9 @@ export default function ProductInfo({ productId }: { productId?: string }) {
                 setPrice(String(data.price))
                 setCoverUrl(data.cover_url)
                 setStatus(data.availability)
+                setDescription(data.description)
+                setImagesUrls(data.images_urls || [])
+                setVideosUrls(data.videos_urls || [])
             }
         }
 
@@ -74,30 +80,30 @@ export default function ProductInfo({ productId }: { productId?: string }) {
 
             <CardHeader>
                 <CardAction>
-                    {loading ? <Skeleton className="h-6 w-24" /> : <ProductStatus status={status}></ProductStatus>}
+                    {loading ? <Skeleton className="h-6 w-24" /> : (
+                        <div className="flex items-center gap-2">
+                            <ProductStatus status={status} />
+                            <ShareButton url={window.location.href} />
+                        </div>
+                    )}
                 </CardAction>
                 <CardTitle>
                     <h2 className="scroll-m-20  pb-2 text-3xl font-semibold tracking-tight first:mt-0">
                         {name || (<Skeleton className="h-8 w-1/3 " />)}
                     </h2>
                 </CardTitle>
-
-
             </CardHeader>
 
             <CardContent className="grid gap-6">
-
-
                 <div className="grid gap-2">
-                    {loading ? <Skeleton className="h-4 w-48" /> : <Label>Description</Label>}
+                    {loading ? <Skeleton className="h-4 w-48" /> : (description === null ? null : <Label>Description</Label>)}
                     <CardDescription>
-                        {loading ? <Skeleton className="h-20 w-full" /> : "This is a detailed description of the product. It provides all the necessary information that a potential buyer would need to make an informed decision about purchasing the product."}
+                        {loading ? <Skeleton className="h-20 w-full" /> : <p className="text-justify">{description}</p>}
                     </CardDescription>
                 </div>
-
             </CardContent>
 
-            <CardFooter className="grid gap-2 grid-cols-1 sm:grid-cols-2">
+            <CardContent className="grid gap-2 grid-cols-1 sm:grid-cols-2">
                 <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
                     {loading ? <Skeleton className="h-6 w-24" /> : `${CURRENCY} ${price}`}
                 </h4>
@@ -105,7 +111,25 @@ export default function ProductInfo({ productId }: { productId?: string }) {
                     <MessageCircle className="ml-2 h-4 w-4" />
                     Whats App
                 </Button>}
-            </CardFooter>
+            </CardContent>
+
+            <CardContent>
+                <MediaSection
+                    title="Image gallery"
+                    loading={loading}
+                    urls={imagesUrls}
+                    type="image"
+                >
+                </MediaSection>
+
+                <MediaSection
+                    title="Videos"
+                    loading={loading}
+                    urls={videosUrls}
+                    type="video"
+                >
+                </MediaSection>
+            </CardContent>
 
         </Card>
     )

@@ -2,7 +2,6 @@
 
 import { Status, StatusIndicator, StatusLabel } from "@/components/kibo-ui/status";
 import { AvailabilityStatus } from "@/lib/types";
-import { label } from "motion/react-client";
 
 type ProductStatusProps = {
     status: AvailabilityStatus

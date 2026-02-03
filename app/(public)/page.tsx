@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { COMPANY_SLOGAN, HERO_INTRO, PRODUCT_OR_SERVICE } from "@/lib/config";
+import Link from "next/link";
 
 export default function Page() {
     return (
@@ -31,11 +32,11 @@ export default function Page() {
                             {COMPANY_SLOGAN}
                         </p>
                         <div className="mt-10 flex items-center justify-center gap-x-6">
-                            <a
+                            <Link
                                 href="/products"
                             >
                                 <Button>Browse {PRODUCT_OR_SERVICE}</Button>
-                            </a>
+                            </Link>
 
                         </div>
                     </div>

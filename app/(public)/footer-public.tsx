@@ -4,10 +4,15 @@ import { Button } from "@/components/ui/button"
 import { Github, Twitter, Linkedin, Instagram } from "lucide-react"
 import { COMPANY_SLOGAN, LOCATION, PHONE_NUMBER, PRODUCT_OR_SERVICE, SITE_TITLE } from "@/lib/config"
 import { ThemeSwitcher } from "../../components/kibo-ui/theme-switcher"
+import WhatsAppButton from "./whatsapp-button"
 
 export function FooterPublic() {
+    
     return (
         <footer className=" w-full">
+
+            <WhatsAppButton />
+
             <div className="container mx-auto px-8 py-12 max-w-7xl">
                 <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 md:grid-cols-4">
                     {/* Brand */}
@@ -78,7 +83,7 @@ export function FooterPublic() {
                     <span>© {new Date().getFullYear()} {SITE_TITLE}. All rights reserved.</span>
                     <div className="flex flex-col gap-2">
                         <span>Made with love by Vilosoft inc.</span>
-                        <ThemeSwitcher/>
+                        <ThemeSwitcher />
                     </div>
                 </div>
             </div>

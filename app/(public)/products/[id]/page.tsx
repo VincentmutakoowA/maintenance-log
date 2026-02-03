@@ -1,6 +1,6 @@
 'use client'
 
-import ProductInfo from "@/app/(public)/products/product-info"
+import ProductInfo from "@/app/(public)/products/info"
 import { useParams } from "next/navigation"
 
 export default function ProductInfoPage() {

@@ -2,7 +2,7 @@
 
 import { Monitor, Moon, Sun } from "lucide-react";
 import { motion } from "motion/react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState, useLayoutEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
 
@@ -23,9 +23,10 @@ export const ThemeSwitcher = ({ className }: { className?: string }) => {
     [setTheme]
   );
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useLayoutEffect(() => {
+    setMounted(true)
+  }, [])
 
   if (!mounted) return null;
 

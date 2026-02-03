@@ -5,14 +5,13 @@ import { type User } from '@supabase/supabase-js'
 import { Input } from "@/components/ui/input"
 import {
     Card,
-    CardAction,
-    CardDescription,
     CardFooter,
     CardHeader,
     CardTitle, CardContent
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Avatar from './avatar'
+import Image from 'next/image'
 // ...
 
 export default function AccountForm({ user }: { user: User | null }) {
@@ -44,7 +43,7 @@ export default function AccountForm({ user }: { user: User | null }) {
                 setWebsite(data.website)
                 setAvatarUrl(data.avatar_url)
             }
-        } catch (error) {
+        } catch {
             alert('Error loading user data!')
         } finally {
             setLoading(false)
@@ -78,7 +77,7 @@ export default function AccountForm({ user }: { user: User | null }) {
             })
             if (error) throw error
             alert('Profile updated!')
-        } catch (error) {
+        } catch {
             alert('Error updating the data!')
         } finally {
             setLoading(false)
@@ -88,7 +87,7 @@ export default function AccountForm({ user }: { user: User | null }) {
     return (
         <Card className="relative form-widget w-full max-w-4xl">
 
-            <img
+            <Image
                 src="https://avatar.vercel.sh/shadcn1"
                 alt="Event cover"
                 className="relative z-20 aspect-[7/2] w-full object-cover brightness-60 grayscale dark:brightness-40"

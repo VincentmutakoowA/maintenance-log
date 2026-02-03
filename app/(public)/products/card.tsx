@@ -1,15 +1,14 @@
-import { Card, CardHeader, CardContent, CardFooter, CardAction } from "../../../components/ui/card";
+import { Card, CardHeader, CardAction } from "@/components/ui/card";
 import Image from "next/image";
-import { TypeProduct } from "@/lib/types";
+import { TypeProductCard } from "@/lib/types";
 import ProductStatus from "@/components/status";
-//import { AvailabilityStatus } from "@/lib/types";
 
-export default function ProductCard({ product }: { product: TypeProduct }) {
+export default function ProductCard({ product }: { product: TypeProductCard }) {
 
     console.log('Product, ', product.cover_url)
 
     return (
-        <Card className="pt-0">
+        <Card className={`pt-0 ${product.featured ? 'border border-primary' : ''} relative overflow-hidden`}>
 
             <div className="relative aspect-[16/9] w-full">
                 <Image
@@ -30,6 +29,13 @@ export default function ProductCard({ product }: { product: TypeProduct }) {
                 <p>${product.price}</p>
             </CardHeader>
 
+            {product.featured && (
+                <div className="absolute bottom-2 right-2 bg-primary text-white text-xs font-medium px-2 py-1 rounded-full">
+                    Featured
+                </div>
+            )}
+
         </Card>
     )
 }
+

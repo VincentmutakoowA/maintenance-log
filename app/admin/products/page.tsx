@@ -1,44 +1,37 @@
 'use client'
-import { useCallback, useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { useEffect, useState } from 'react'
 import { type User } from '@supabase/supabase-js'
 import {
     Card,
-    CardAction,
-    CardDescription,
-    CardFooter,
     CardHeader,
-    CardTitle, CardContent
+    CardTitle,
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { PRODUCT_OR_SERVICE } from '@/lib/config'
 import { Plus } from 'lucide-react'
 import Link from 'next/link'
-import ProductAdminCard from '@/app/admin/products/product-card'
-import { TypeProduct } from '@/lib/types'
+import ProductAdminCard from '@/app/admin/products/card'
+import { TypeProductCard } from '@/lib/types'
 import { getAllProducts } from './actions'
 
 // ...
 
 export default function ProductForm({ user }: { user: User | null }) {
 
-    const supabase = createClient()
+    //const [loading, setLoading] = useState(true)
+    const [products, setProducts] = useState<TypeProductCard[]>([])
 
-    const [loading, setLoading] = useState(true)
-    const [products, setProducts] = useState<TypeProduct[]>([])
-
-
-    const getProducts = useCallback(async () => {
-        
-        const data = await getAllProducts()
-        setProducts(data)
-        setLoading(false)
-
-    }, [user, supabase])
 
     useEffect(() => {
+        const getProducts = async () => {
+            const data = await getAllProducts()
+            console.log('Data', data)
+            setProducts(data)
+        }
+
         getProducts()
-    }, [user, getProducts])
+    }, [user])
+
 
     return (
         <Card className="relative form-widget w-full max-w-4xl">

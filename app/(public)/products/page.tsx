@@ -1,57 +1,63 @@
 'use client'
-import { useCallback, useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import { type User } from '@supabase/supabase-js'
+import { useEffect, useState } from 'react'
 import {
     Card,
-    CardAction,
-    CardDescription,
-    CardFooter,
     CardHeader,
-    CardTitle, CardContent
+    CardTitle,
 } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { PRODUCT_OR_SERVICE } from '@/lib/config'
 import Link from 'next/link'
-import ProductCard from '@/app/(public)/products/product-card'
-import { TypeProduct } from '@/lib/types'
-import { Input } from '@/components/ui/input'
+import ProductCard from '@/app/(public)/products/card'
+import { TypeProduct, TypeProductCard } from '@/lib/types'
 import { getAllProducts } from './actions'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+    Breadcrumb,
+    BreadcrumbEllipsis,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    BreadcrumbList,
+    BreadcrumbPage,
+    BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
 
-// ...
-
-export default function ProductForm({ user }: { user: User | null }) {
-
-    const supabase = createClient()
+export default function ProductForm() {
 
     const [loading, setLoading] = useState(true)
-    const [products, setProducts] = useState<TypeProduct[]>([])
-
-
-    const getProducts = useCallback(async () => {
-
-        const data = await getAllProducts()
-        setProducts(data)
-        setLoading(false)
-
-    }, [user, supabase])
+    const [products, setProducts] = useState<TypeProductCard[]>([])
 
     useEffect(() => {
+        let alive = true
+
+        const getProducts = async () => {
+            setLoading(true)
+            const data = await getAllProducts()
+            if (!alive) return
+            setProducts(data)
+            setLoading(false)
+        }
+
         getProducts()
-    }, [user, getProducts])
+        return () => { alive = false }
+    }, [])
+
 
     return (
         <div className="relative form-widget w-full max-w-7xl">
 
-            <CardHeader className='flex justify-between items-center p-4'>
-                <CardTitle>{PRODUCT_OR_SERVICE}</CardTitle>
-                <Input
-                    type="search"
-                    placeholder={`Search ${PRODUCT_OR_SERVICE.toLowerCase()}...`}
-                    className="max-w-sm "
-                />
-            </CardHeader>
+            <div className='p-4'>
+                <Breadcrumb>
+                <BreadcrumbList>
+                    <BreadcrumbItem>
+                        <BreadcrumbLink href="/">Home</BreadcrumbLink>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                        <BreadcrumbPage>{PRODUCT_OR_SERVICE}</BreadcrumbPage>
+                    </BreadcrumbItem>
+                </BreadcrumbList>
+            </Breadcrumb>
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 px-4">
 

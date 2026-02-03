@@ -5,12 +5,16 @@ import { createClient } from "@/lib/supabase/client"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import ProductCover from "@/app/admin/products/product-cover"
+import ProductCover from "@/app/admin/products/cover"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { getProductById, saveProductAction, deleteProductAction } from "./actions"
-import ProductAvailabilitySelect from "./product-availability-select"
+import ProductAvailabilitySelect from "./availability-select"
 import { AvailabilityStatus } from "@/lib/types"
+import { Textarea } from "@/components/ui/textarea"
+import ProductMediaUpload from "./media-upload"
+import { PRODUCT_IMAGE_BUCKET, PRODUCT_VIDEO_BUCKET } from "@/lib/config"
+import ProductFeaturedSelect from "./featured-select"
 
 
 
@@ -23,6 +27,13 @@ export default function ProductForm({ productId }: { productId?: string }) {
   const [coverUrl, setCoverUrl] = useState<string | null>(null)
   const [coverPath, setCoverPath] = useState<string | null>(null)
   const [availability, setAvailability] = useState<AvailabilityStatus>("available")
+  const [description, setDescription] = useState("")
+  const [images, setImages] = useState<string[]>([])
+  const [imagePaths, setImagePaths] = useState<string[]>([])
+  const [videos, setVideos] = useState<string[]>([])
+  const [videoPaths, setVideoPaths] = useState<string[]>([])
+  const [featured, setFeatured] = useState(false)
+
   const isEdit = Boolean(productId)
 
 
@@ -34,9 +45,15 @@ export default function ProductForm({ productId }: { productId?: string }) {
       if (data) {
         setName(data.name)
         setPrice(String(data.price))
+        setDescription(data.description || "")
+        setAvailability(data.availability as AvailabilityStatus)
         setCoverUrl(data.cover_url)
         setCoverPath(data.cover_path)
-        //console.log("Image url ", coverUrl)
+        setImages(data.images_urls || [])
+        setImagePaths(data.images_paths || [])
+        setVideos(data.videos_urls || [])
+        setVideoPaths(data.videos_paths || [])
+        setFeatured(data.featured)
       }
     }
     loadProduct()
@@ -55,6 +72,12 @@ export default function ProductForm({ productId }: { productId?: string }) {
         <input type="hidden" name="cover_url" value={coverUrl ?? ""} />
         <input type="hidden" name="cover_path" value={coverPath ?? ""} />
         <input type="hidden" name="availability" value={availability} />
+        <input type="hidden" name="featured" value={featured ? "true" : "false"} />
+        <input type="hidden" name="images_urls" value={JSON.stringify(images)} />
+        <input type="hidden" name="images_paths" value={JSON.stringify(imagePaths)} />
+        <input type="hidden" name="videos_urls" value={JSON.stringify(videos)} />
+        <input type="hidden" name="videos_paths" value={JSON.stringify(videoPaths)} />
+
 
         <CardContent className="space-y-4">
           <Input
@@ -79,6 +102,19 @@ export default function ProductForm({ productId }: { productId?: string }) {
             onChange={setAvailability}>
           </ProductAvailabilitySelect>
 
+          <ProductFeaturedSelect
+            featured={featured}
+            onChange={setFeatured}>
+          </ProductFeaturedSelect>
+
+          <Textarea
+            placeholder="Enter the description"
+            name="description"
+            value={description}
+            onChange={e => setDescription(e.target.value)}
+            >
+
+          </Textarea>
 
           <Label>Cover Image</Label>
 
@@ -91,6 +127,35 @@ export default function ProductForm({ productId }: { productId?: string }) {
               setCoverPath(path)
             }}
           />
+
+          <Label>Images</Label>
+          <ProductMediaUpload
+            bucket={PRODUCT_IMAGE_BUCKET}
+            uid={productId ?? "new"}
+            urls={images}
+            paths={imagePaths}
+            accept="image/*"
+            onChange={(urls, paths) => {
+              setImages(urls)
+              setImagePaths(paths)
+            }}
+          >
+          </ProductMediaUpload>
+
+          <Label>Videos</Label>
+          <ProductMediaUpload
+            bucket={PRODUCT_VIDEO_BUCKET}
+            uid={productId ?? "new"}
+            urls={videos}
+            paths={videoPaths}
+            accept="video/*"
+            onChange={(urls, paths) => {
+              setVideos(urls)
+              setVideoPaths(paths)
+            }}
+          >
+          </ProductMediaUpload>
+
         </CardContent>
 
         <CardFooter className="flex justify-between">

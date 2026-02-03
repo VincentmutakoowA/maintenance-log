@@ -1,22 +1,24 @@
-import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardAction } from "../../../components/ui/card";
+import { Card, CardHeader, CardTitle, CardAction } from "@/components/ui/card";
 import Link from 'next/link'
 import { Button } from "../../../components/ui/button";
-import { TypeProduct } from "@/lib/types";
+import { TypeProductCard } from "@/lib/types";
 import ProductStatus from "@/components/status";
+import Image from "next/image";
 
-export default function ProductAdminCard({ product }: { product: TypeProduct }) {
-
+export default function ProductAdminCard({ product }: { product: TypeProductCard }) {
     console.log('Product, ', product.cover_url)
 
     return (
-        <Card className="relative">
+        <Card className="p-0">
 
-            <img
-                src={product.cover_url || ''}
-                alt="Product cover"
-                className="relative aspect-[16/9] w-full object-cover"
-            />
-
+            <div className="relative w-full  aspect-[16/9]">
+                <Image
+                    src={product.cover_url || ''}
+                    alt="Product cover"
+                    className="relative object-cover"
+                    fill
+                />
+            </div>
 
             <CardHeader>
                 <CardAction className="grid gap-2">

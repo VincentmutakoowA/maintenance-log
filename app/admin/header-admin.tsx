@@ -41,8 +41,8 @@ export default function HeaderAdmin() {
                 </div>
 
                 <div className="hidden lg:flex lg:gap-x-12">
-                    <a href='/admin/products'><Button variant="ghost">{PRODUCT_OR_SERVICE}</Button></a>
-                    <a href='/admin/products/featured'><Button variant="ghost">Featured</Button></a>
+                    <Link href='/admin/products'><Button variant="ghost">{PRODUCT_OR_SERVICE}</Button></Link>
+                    <Link href='/admin/products/featured'><Button variant="ghost">Featured</Button></Link>
                     <NavigationMenu>
                         <NavigationMenuList>
                             <NavigationMenuItem>
@@ -82,9 +82,8 @@ export default function HeaderAdmin() {
                     <div className="mt-6 space-y-2">
 
 
-                        <a className="block rounded-lg px-3 py-2 font-semibold" href='/admin/products'>{PRODUCT_OR_SERVICE}</a>
-                        <a className="block rounded-lg px-3 py-2 font-semibold" href='/admin/products/featured'>Featured</a>
-
+                        <Link className="block rounded-lg px-3 py-2 font-semibold" href='/admin/products'>{PRODUCT_OR_SERVICE}</Link>
+                        <Link className="block rounded-lg px-3 py-2 font-semibold" href='/admin/products/featured'>Featured</Link>
                         <button
                             onClick={() => setMobileProductOpen((v) => !v)}
                             className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-base font-semibold text-gray-900 dark:text-white"
