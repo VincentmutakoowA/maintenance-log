@@ -64,9 +64,8 @@ export default function ProductCover({
             <Dropzone
                 accept={{ "image/*": [".png", ".jpg", ".jpeg"] }}
                 onError={console.error}
-                
+                maxFiles={1}
                 src={files}
-
                 onDrop={handleDrop}
                 className='relative aspect-[16/7]'
             >

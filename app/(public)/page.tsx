@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { COMPANY_SLOGAN, HERO_INTRO, PRODUCT_OR_SERVICE } from "@/lib/config";
 import Link from "next/link";
+import { CarouselFeatured } from "./carousel";
 
 export default function Page() {
     return (
@@ -57,18 +58,14 @@ export default function Page() {
 
             <div className="w-full max-w-7xl mx-auto px-4">
 
-                <h2 className="scroll-m-20 pb-2 text-3xl font-semibold tracking-tight first:mt-0">
-                    Featured
-                </h2>
-                <Card>
-                </Card>
+                <CarouselFeatured />
 
-                 <h2 className="scroll-m-20 pb-2 text-3xl font-semibold tracking-tight first:mt-0">
+                <h2 className="scroll-m-20 pb-2 text-3xl font-semibold tracking-tight first:mt-0">
                     Why us?
                 </h2>
                 <Card>
                 </Card>
-                
+
             </div>
 
         </div>

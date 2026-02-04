@@ -7,7 +7,7 @@ import { ThemeSwitcher } from "../../components/kibo-ui/theme-switcher"
 import WhatsAppButton from "./whatsapp-button"
 
 export function FooterPublic() {
-    
+
     return (
         <footer className=" w-full">
 
@@ -40,6 +40,7 @@ export function FooterPublic() {
                         <ul className="space-y-2 text-sm text-muted-foreground">
                             <li><Link href="/privacy">Privacy Policy</Link></li>
                             <li><Link href="/terms">Terms of Service</Link></li>
+                            <li><Link href="/login">Login</Link></li>
                             <hr></hr>
                             <li>{LOCATION}</li>
                             <li>{PHONE_NUMBER}</li>
