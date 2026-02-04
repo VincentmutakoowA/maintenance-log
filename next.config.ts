@@ -9,6 +9,10 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: NEXT_HOSTNAME
+      },
+      {
+        protocol: 'https',
+        hostname: 'i.pravatar.cc'
       }
     ]
   }
