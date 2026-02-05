@@ -1,22 +1,18 @@
 'use client'
+
+
 import { useEffect, useState } from 'react'
-import {
-    Card,
-} from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import { PRODUCT_OR_SERVICE } from '@/lib/config'
 import Link from 'next/link'
 import ProductCard from '@/app/(public)/products/card'
 import { TypeProductCard } from '@/lib/types'
 import { getAllProducts } from './actions'
 import { Skeleton } from '@/components/ui/skeleton'
-import {
-    Breadcrumb,
-    BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbList,
-    BreadcrumbPage,
-    BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
+
+
+
+
 
 export default function ProductForm() {
 
@@ -40,21 +36,8 @@ export default function ProductForm() {
 
 
     return (
-        <div className="relative form-widget w-full max-w-7xl">
+        <div className="relative form-widget w-full max-w-7xl mt-4">
 
-            <div className='p-4'>
-                <Breadcrumb>
-                <BreadcrumbList>
-                    <BreadcrumbItem>
-                        <BreadcrumbLink href="/">Home</BreadcrumbLink>
-                    </BreadcrumbItem>
-                    <BreadcrumbSeparator />
-                    <BreadcrumbItem>
-                        <BreadcrumbPage>{PRODUCT_OR_SERVICE}</BreadcrumbPage>
-                    </BreadcrumbItem>
-                </BreadcrumbList>
-            </Breadcrumb>
-            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 px-4">
 

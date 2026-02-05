@@ -22,7 +22,7 @@ export async function getAllProducts() {
     const supabase = await createClient()
     const { data, error } = await supabase
         .from("products")
-        .select("id, name, price, cover_url, availability")
+        .select("id, name, price, cover_url, availability, featured")
 
     if (error) {
         throw new Error(error.message)

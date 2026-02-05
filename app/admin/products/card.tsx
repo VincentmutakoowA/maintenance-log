@@ -1,4 +1,4 @@
-import { Card, CardHeader, CardTitle, CardAction } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardAction, CardFooter } from "@/components/ui/card";
 import Link from 'next/link'
 import { Button } from "../../../components/ui/button";
 import { TypeProductCard } from "@/lib/types";
@@ -31,6 +31,7 @@ export default function ProductAdminCard({ product }: { product: TypeProductCard
                 <p>${product.price}</p>
 
             </CardHeader>
+            <CardFooter></CardFooter>
 
         </Card>
     )

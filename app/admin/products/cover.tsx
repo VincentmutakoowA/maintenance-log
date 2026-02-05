@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Image from 'next/image'
 import { Dropzone, DropzoneContent, DropzoneEmptyState } from "@/components/kibo-ui/dropzone";
+import { PRODUCT_COVER_BUCKET } from '@/lib/config'
+import { Spinner } from '@/components/ui/spinner';
 
 export default function ProductCover({
     uid,
@@ -15,14 +17,15 @@ export default function ProductCover({
     onUpload: (url: string, path: string) => void
 }) {
     const supabase = createClient()
-    //const [uploading, setUploading] = useState(false)
+    
+    const [uploading, setUploading] = useState(false)
 
     const [files, setFiles] = useState<File[] | undefined>();
     const [filePreview, setFilePreview] = useState<string | undefined>();
 
     const handleDrop = async (files: File[]) => {
 
-        console.log(files);
+        setUploading(true)
         setFiles(files);
         if (files.length > 0) {
             const reader = new FileReader();
@@ -40,7 +43,7 @@ export default function ProductCover({
 
         const { error: uploadError } = await supabase
             .storage
-            .from('product_cover')
+            .from(PRODUCT_COVER_BUCKET)
             .upload(filePath, file, {
                 contentType: file.type, upsert: true
             });
@@ -53,11 +56,11 @@ export default function ProductCover({
 
         const { data } = supabase
             .storage
-            .from('product_cover')
+            .from(PRODUCT_COVER_BUCKET)
             .getPublicUrl(filePath);
 
         onUpload(data.publicUrl, filePath);
-
+        setUploading(false)
     };
 
     return (
@@ -71,14 +74,19 @@ export default function ProductCover({
             >
                 <DropzoneEmptyState />
                 <DropzoneContent >
-                    {filePreview && (
-                        <Image
-                            src={filePreview}
-                            alt="Preview"
-                            className="object-cover"
-                            fill
+                    {uploading ? (
+                        <div className="flex items-center justify-center h-full">
+                            <Spinner />
+                        </div>
+                    ) : (
+                        filePreview && (
+                            <Image
+                                src={filePreview}
+                                alt="Preview"
+                                className="object-cover"
+                                fill
                         />
-                    )}      
+                    ))}      
                 </DropzoneContent>
                 {url && !filePreview && (
                         <Image
@@ -90,4 +98,4 @@ export default function ProductCover({
                     )}
             </Dropzone>
     )
-}
+}'product_cover'

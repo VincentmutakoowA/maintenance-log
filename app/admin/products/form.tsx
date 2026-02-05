@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea"
 import ProductMediaUpload from "./media-upload"
 import { PRODUCT_IMAGE_BUCKET, PRODUCT_VIDEO_BUCKET } from "@/lib/config"
 import ProductFeaturedSelect from "./featured-select"
+import { Spinner } from "@/components/ui/spinner"
 
 
 
@@ -121,7 +122,6 @@ export default function ProductForm({ productId }: { productId?: string }) {
           <ProductCover
             uid={productId ?? "new"}
             url={coverUrl}
-            size={150}
             onUpload={(url, path) => {
               setCoverUrl(url)
               setCoverPath(path)
@@ -187,7 +187,7 @@ export default function ProductForm({ productId }: { productId?: string }) {
                     setLoading(true)
                     await deleteProductAction(productId!, coverPath)
                     setLoading(false)
-                  }} disabled={loading}>Delete</Button>
+                  }} disabled={loading}>Delete {loading && <Spinner />} </Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>

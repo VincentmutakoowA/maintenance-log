@@ -58,9 +58,7 @@ export default function Page() {
             <div className="w-full max-w-7xl mx-auto px-4">
                 <CarouselFeatured />
                 <div className="text-center mt-10">
-                    <Button>
-                        <Link href="/products">View all {PRODUCT_OR_SERVICE.toLowerCase()}</Link>
-                    </Button>
+
                 </div>
             </div>
 

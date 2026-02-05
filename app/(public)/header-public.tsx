@@ -32,21 +32,25 @@ export default function HeaderPublic() {
 
     return (
         <header className="w-full z-50">
-            <nav className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:p-3 lg:px-8">
+            <nav className="mx-auto flex max-w-7xl items-center justify-between  lg:p-3 lg:px-8">
                 <div className="flex lg:flex-1">
-                    <Link href="/" className=" relative aspect-square">
+                    <Link href="/" className="flex items-center gap-4 ml-6">
                         <span className="sr-only">{SITE_TITLE}</span>
-                        <Image
-                            width={32}
-                            height={32}
-                            alt="Logo"
-                            src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
-                            className="h-6 "
-                        />
+                        <div className="relative aspect-square w-10 rounded-md overflow-hidden">
+                            <Image
+                                fill
+                                alt="Logo"
+                                src="/logo.png"
+                            />
+                        </div>
+                        <h2 className="scroll-m-20 text-3xl font-semibold tracking-tight first:mt-0">
+                            {SITE_TITLE}
+                        </h2>
                     </Link>
+
                 </div>
 
-                <div className="flex lg:hidden gap-5">
+                <div className="flex lg:hidden gap-5 m-6">
                     <Link href='/search'>
                         <Search></Search>
                     </Link>

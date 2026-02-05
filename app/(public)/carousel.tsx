@@ -1,18 +1,7 @@
 'use client'
 
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from "@/components/ui/carousel"
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardAction,
-} from "@/components/ui/card"
+import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardAction } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useEffect, useState } from "react"
 import { TypeProductCard } from "@/lib/types"
@@ -21,6 +10,9 @@ import Image from "next/image"
 import { useRouter } from "next/navigation"
 import ProductStatus from "@/components/status"
 import Autoplay from "embla-carousel-autoplay"
+import { Link } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { PRODUCT_OR_SERVICE } from "@/lib/config"
 
 export function CarouselFeatured() {
   const [loading, setLoading] = useState(true)
@@ -70,13 +62,9 @@ export function CarouselFeatured() {
         <CarouselContent>
           {loading ? (
             Array.from({ length: 4 }).map((_, index) => (
-              <CarouselItem key={index} className="w-60 pr-4">
-                <Card className="w-60 h-80">
-                  <Skeleton className="w-full h-48 rounded-t-md" />
-                  <CardHeader>
-                    <Skeleton className="w-3/4 h-6 mb-2" />
-                    <Skeleton className="w-1/2 h-6" />
-                  </CardHeader>
+              <CarouselItem key={index} className="w-full pr-4">
+                <Card className="w-60 h-80 p-0 aspect-square">
+                  <Skeleton className="w-full h-full rounded-t-md " />
                 </Card>
               </CarouselItem>
             ))
@@ -114,6 +102,12 @@ export function CarouselFeatured() {
           )}
         </CarouselContent>
       </Carousel>
+
+      <Link href="/products">
+        <Button variant="outline">
+          View all {PRODUCT_OR_SERVICE.toLowerCase()}
+        </Button>
+      </Link>
     </div>
   )
 }

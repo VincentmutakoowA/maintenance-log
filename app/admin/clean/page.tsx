@@ -1,7 +1,14 @@
 "use client"
 
-import { useTransition } from "react"
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
+import { useState, useTransition } from "react"
+import {
+    Card,
+    CardHeader,
+    CardTitle,
+    CardDescription,
+    CardContent,
+    CardFooter,
+} from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import {
     Dialog,
@@ -10,16 +17,24 @@ import {
     DialogTitle,
     DialogDescription,
     DialogFooter,
-    DialogTrigger,DialogClose
+    DialogTrigger,
+    DialogClose,
 } from "@/components/ui/dialog"
 import { cleanupTempFiles } from "./action"
 
 export default function TempCleanup() {
     const [isPending, startTransition] = useTransition()
+    const [open, setOpen] = useState(false)
 
     function handleCleanup() {
         startTransition(async () => {
-            await cleanupTempFiles()
+            try {
+                await cleanupTempFiles()
+                alert("Temporary files deleted successfully.")
+                setOpen(false)
+            } catch (error) {
+                alert("Failed to delete temporary files.")
+            }
         })
     }
 
@@ -39,9 +54,11 @@ export default function TempCleanup() {
             </CardContent>
 
             <CardFooter>
-                <Dialog>
+                <Dialog open={open} onOpenChange={setOpen}>
                     <DialogTrigger asChild>
-                        <Button variant="destructive">Clean up temp files</Button>
+                        <Button variant="destructive">
+                            Clean up temp files
+                        </Button>
                     </DialogTrigger>
 
                     <DialogContent>
