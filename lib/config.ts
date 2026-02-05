@@ -1,9 +1,20 @@
 export const SITE_TITLE = "Next Autos" 
 export const PRODUCT_OR_SERVICE = "Cars"
 export const COMPANY_SLOGAN = "Your trusted partner in finding the perfect car."
+export const COMPANYY_DESCRIPTION = "Next Autos is an innovative online platform dedicated to connecting car buyers and sellers. We offer a seamless experience with a wide range of vehicles, competitive prices, and exceptional customer service."
 export const COMPANY_MISSION = "To simplify the car buying and selling experience through innovation and exceptional service."
 export const COMPAN_VISION = "To be the leading online marketplace for cars, connecting buyers and sellers worldwide."
 export const COMPANY_TEAM_MESSAGE = "A dedicated team of professionals passionate about connecting people with the perfect cars."
+export const COMPANY_CORE_VALUES = [
+    { title: "Customer Focus", description: "We prioritize our customers' needs and strive to exceed their expectations." },
+    { title: "Integrity", description: "We conduct our business with honesty and transparency." },
+    { title: "Innovation", description: "We embrace change and continuously seek to improve our platform and services." },
+    { title: "Collaboration", description: "We believe in the power of teamwork and open communication." },
+]
+export const CONTACT_EMAIL = 'hello@example.com'
+export const CONTACT_PHONE = '+256 700 000000'
+export const CONTACT_LOCATION = 'Kampala, Uganda'
+export const GOOGLE_MAP_IFRAME_URL = 'https://www.google.com/maps/embed?pb=YOUR_EMBED_URL'
 export const COMPANY_TEAM = [{
     name: "John Doe",
     role: "Founder & CEO",
