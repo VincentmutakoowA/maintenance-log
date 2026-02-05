@@ -1,8 +1,8 @@
 import Link from "next/link"
 import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
-import { Github, Twitter, Linkedin, Instagram } from "lucide-react"
-import { COMPANY_SLOGAN, LOCATION, PHONE_NUMBER, PRODUCT_OR_SERVICE, SITE_TITLE } from "@/lib/config"
+import { Instagram,  } from "lucide-react"
+import { COMPANY_INSTAGRAM_URL, COMPANY_SLOGAN, LOCATION, PHONE_NUMBER, PRODUCT_OR_SERVICE, SITE_TITLE } from "@/lib/config"
 import { ThemeSwitcher } from "../../components/kibo-ui/theme-switcher"
 import WhatsAppButton from "./whatsapp-button"
 
@@ -51,26 +51,9 @@ export function FooterPublic() {
                     <div className="space-y-3">
                         <h4 className="text-sm font-semibold">Social</h4>
                         <div className="flex gap-2">
-                            <Button variant="ghost" size="icon" asChild>
-                                <Link href="https://github.com" aria-label="GitHub">
-                                    <Github className="h-5 w-5" />
-                                </Link>
-                            </Button>
 
                             <Button variant="ghost" size="icon" asChild>
-                                <Link href="https://twitter.com" aria-label="Twitter">
-                                    <Twitter className="h-5 w-5" />
-                                </Link>
-                            </Button>
-
-                            <Button variant="ghost" size="icon" asChild>
-                                <Link href="https://linkedin.com" aria-label="LinkedIn">
-                                    <Linkedin className="h-5 w-5" />
-                                </Link>
-                            </Button>
-
-                            <Button variant="ghost" size="icon" asChild>
-                                <Link href="https://instagram.com" aria-label="Instagram">
+                                <Link href={COMPANY_INSTAGRAM_URL} aria-label="Instagram">
                                     <Instagram className="h-5 w-5" />
                                 </Link>
                             </Button>

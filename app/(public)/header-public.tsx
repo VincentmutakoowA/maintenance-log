@@ -11,7 +11,6 @@ import { Button } from '../../components/ui/button'
 import { PHONE_NUMBER, PRODUCT_OR_SERVICE, SITE_TITLE } from '@/lib/config'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Input } from '@/components/ui/input'
 
 const products = [
     {

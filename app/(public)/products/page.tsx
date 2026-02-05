@@ -2,18 +2,15 @@
 import { useEffect, useState } from 'react'
 import {
     Card,
-    CardHeader,
-    CardTitle,
 } from '@/components/ui/card'
 import { PRODUCT_OR_SERVICE } from '@/lib/config'
 import Link from 'next/link'
 import ProductCard from '@/app/(public)/products/card'
-import { TypeProduct, TypeProductCard } from '@/lib/types'
+import { TypeProductCard } from '@/lib/types'
 import { getAllProducts } from './actions'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
     Breadcrumb,
-    BreadcrumbEllipsis,
     BreadcrumbItem,
     BreadcrumbLink,
     BreadcrumbList,
