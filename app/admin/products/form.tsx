@@ -185,7 +185,7 @@ export default function ProductForm({ productId }: { productId?: string }) {
 
                   <Button variant="destructive" onClick={async () => {
                     setLoading(true)
-                    await deleteProductAction(productId!, coverPath)
+                    await deleteProductAction(productId!)
                     setLoading(false)
                   }} disabled={loading}>Delete {loading && <Spinner />} </Button>
                 </DialogFooter>

@@ -1,7 +1,9 @@
 "use server"
 
+import { PRODUCT_COVER_BUCKET, PRODUCT_IMAGE_BUCKET, PRODUCT_VIDEO_BUCKET } from "@/lib/config"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
+import { moveFromTemp } from "./functions"
 
 export async function getProductById(productId: string) {
     const supabase = await createClient()
@@ -35,144 +37,157 @@ export async function saveProductAction(formData: FormData) {
 
     const supabase = await createClient()
 
-    async function moveFromTemp(
-        bucket: string,
-        paths: string[]
-    ) {
-        const movedPaths: string[] = []
-        const urls: string[] = []
-
-        for (const oldPath of paths) {
-            if (!oldPath.startsWith("temp/")) {
-                movedPaths.push(oldPath)
-
-                const { data } = supabase
-                    .storage
-                    .from(bucket)
-                    .getPublicUrl(oldPath)
-
-                urls.push(data.publicUrl)
-                continue
-            }
-
-            const newPath = oldPath.replace("temp/", "")
-
-            const { error } = await supabase
-                .storage
-                .from(bucket)
-                .move(oldPath, newPath)
-
-            if (error) throw new Error(error.message)
-
-            const { data } = supabase
-                .storage
-                .from(bucket)
-                .getPublicUrl(newPath)
-
-            movedPaths.push(newPath)
-            urls.push(data.publicUrl)
-        }
-
-        return { paths: movedPaths, urls }
+    async function deletePaths(bucket: string, paths: string[]) {
+        if (!paths.length) return
+        await supabase.storage.from(bucket).remove(paths)
     }
-
 
     const id = formData.get("id") as string | null
     const name = formData.get("name") as string
     const price = parseFloat(formData.get("price") as string)
     const description = formData.get("description") as string | null
     const featured = formData.get("featured") === "true"
-    const images_paths = JSON.parse(formData.get("images_paths") as string)
-    const { paths: finalImagePaths, urls: finalImageUrls } = await moveFromTemp("product_images", images_paths)
-    const videos_paths = JSON.parse(formData.get("videos_paths") as string)
-    const { paths: finalVideoPaths, urls: finalVideoUrls } = await moveFromTemp("product_videos", videos_paths)
+    const availability = formData.get("availability") as string | null
 
-    let coverUrl = formData.get("cover_url") as string | null
+    const imagesInput = JSON.parse(formData.get("images_paths") as string || "[]")
+    const videosInput = JSON.parse(formData.get("videos_paths") as string || "[]")
+
     let coverPath = formData.get("cover_path") as string | null
-    const availability = formData.get("availability") as string as string | null
+    let coverUrl = formData.get("cover_url") as string | null
 
-    if (coverPath) {
-        const { paths, urls } = await moveFromTemp(
-            "product_cover",
-            [coverPath]
-        )
-        coverPath = paths[0]
-        coverUrl = urls[0]
-    }
+    const movedFiles: { bucket: string; path: string }[] = []
 
-    const payload = {
-        name,
-        price,
-        availability,
-        featured,
-        description,
-        cover_url: coverUrl,
-        cover_path: coverPath,
-        images_urls: finalImageUrls,
-        images_paths: finalImagePaths,
-        videos_urls: finalVideoUrls,
-        videos_paths: finalVideoPaths,
-        updated_at: new Date().toISOString(),
-    }
+    let productId = id
+    let oldImages: string[] = []
+    let oldVideos: string[] = []
+    let oldCover: string | null = null
 
-    if (id) {
-        //Update
+    try {
+        // Fetch existing product (update case)
+        if (productId) {
+            const { data } = await supabase
+                .from("products")
+                .select("images_paths, videos_paths, cover_path")
+                .eq("id", productId)
+                .single()
+
+            oldImages = data?.images_paths ?? []
+            oldVideos = data?.videos_paths ?? []
+            oldCover = data?.cover_path ?? null
+        }
+
+        // Create product if needed
+        if (!productId) {
+            const { data, error } = await supabase
+                .from("products")
+                .insert({
+                    name,
+                    price,
+                    availability,
+                    featured,
+                    description,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                })
+                .select("id")
+                .single()
+
+            if (error) throw error
+            productId = data.id
+        }
+
+        // Move media
+        const { paths: imagePaths, urls: imageUrls } =
+            await moveFromTemp("product_images", imagesInput, productId, movedFiles)
+
+        const { paths: videoPaths, urls: videoUrls } =
+            await moveFromTemp("product_videos", videosInput, productId, movedFiles)
+
+        if (coverPath) {
+            const { paths, urls } = await moveFromTemp(
+                PRODUCT_COVER_BUCKET,
+                [coverPath],
+                productId,
+                movedFiles
+            )
+            coverPath = paths[0]
+            coverUrl = urls[0]
+        }
+
+        // Diff and delete removed files
+        const removedImages = oldImages.filter(p => !imagePaths.includes(p))
+        const removedVideos = oldVideos.filter(p => !videoPaths.includes(p))
+        const removedCover = oldCover && oldCover !== coverPath ? [oldCover] : []
+
+        await deletePaths("product_images", removedImages)
+        await deletePaths("product_videos", removedVideos)
+        await deletePaths(PRODUCT_COVER_BUCKET, removedCover)
+
+        // Final DB update
         const { error } = await supabase
             .from("products")
-            .update(payload)
-            .eq("id", id)
+            .update({
+                name,
+                price,
+                availability,
+                featured,
+                description,
+                cover_url: coverUrl,
+                cover_path: coverPath,
+                images_urls: imageUrls,
+                images_paths: imagePaths,
+                videos_urls: videoUrls,
+                videos_paths: videoPaths,
+                updated_at: new Date().toISOString(),
+            })
+            .eq("id", productId)
 
-        if (error) { throw new Error(error.message) }
-    } else {
-        //Insert without id
-        const { error } = await supabase
-            .from("products")
-            .insert(payload)
-        if (error) { throw new Error(error.message) }
+        if (error) throw error
+    } catch (err) {
+        // ROLLBACK newly moved files
+        for (const file of movedFiles) {
+            await supabase.storage.from(file.bucket).remove([file.path])
+        }
+        throw err
     }
 
     redirect("/admin/products")
 }
 
+
 export async function deleteProductAction(
     productId: string,
-    coverPath?: string | null,
-    imagesPaths?: string[],
-    videosPaths?: string[]
 ) {
     const supabase = await createClient()
 
-    if (coverPath) {
-        const { error: storageError } = await supabase
-            .storage
-            .from("product_cover")
-            .remove([coverPath])
+    const { data, error: fetchError } = await supabase
+        .from("products")
+        .select("cover_path, images_paths, videos_paths")
+        .eq("id", productId)
+        .single()
 
-        if (storageError) {
-            throw new Error(storageError.message)
-        }
+    if (fetchError) throw new Error(fetchError.message)
+    const coverPath = data?.cover_path
+    const imagesPaths: string[] = data.images_paths ?? []
+    const videosPaths: string[] = data.videos_paths ?? []
+
+
+    if (coverPath) {
+        await supabase.storage
+            .from(PRODUCT_COVER_BUCKET)
+            .remove([coverPath])
     }
 
     if (imagesPaths && imagesPaths.length > 0) {
-        const { error: imagesError } = await supabase
-            .storage
-            .from("products_images")
+        await supabase.storage
+            .from(PRODUCT_IMAGE_BUCKET)
             .remove(imagesPaths)
-
-        if (imagesError) {
-            throw new Error(imagesError.message)
-        }
     }
 
     if (videosPaths && videosPaths.length > 0) {
-        const { error: videosError } = await supabase
-            .storage
-            .from("products_videos")
+         await supabase.storage
+            .from(PRODUCT_VIDEO_BUCKET)
             .remove(videosPaths)
-
-        if (videosError) {
-            throw new Error(videosError.message)
-        }
     }
 
     const { error: dbError } = await supabase

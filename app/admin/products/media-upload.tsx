@@ -39,7 +39,7 @@ export default function ProductMediaUpload({
         try {
             for (const file of files) {
                 const ext = file.name.split(".").pop()
-                const path = `temp/${uid}/${crypto.randomUUID()}.${ext}`
+                const path = `temp/${uid}${crypto.randomUUID()}.${ext}`
 
                 const { error } = await supabase.storage
                     .from(bucket)

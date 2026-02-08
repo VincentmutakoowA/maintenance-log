@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useRef, useEffect } from 'react'
 import { PRODUCT_OR_SERVICE } from '@/lib/config'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -12,6 +12,11 @@ export default function SearchPage() {
     const [query, setQuery] = useState('')
     const [results, setResults] = useState<TypeProductCard[]>([])
     const [isPending, startTransition] = useTransition()
+    const inputRef = useRef<HTMLInputElement>(null)
+
+    useEffect(() => {
+        inputRef.current?.focus()
+    }, [])
 
     function handleSearch(value: string) {
         setQuery(value)
@@ -30,6 +35,7 @@ export default function SearchPage() {
                 className="w-full max-w-lg mb-6"
                 value={query}
                 onChange={(e) => handleSearch(e.target.value)}
+                ref={inputRef}
             />
 
             <div className="w-full grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
