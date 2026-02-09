@@ -98,4 +98,4 @@ export default function ProductCover({
                     )}
             </Dropzone>
     )
-}'product_cover'
+}

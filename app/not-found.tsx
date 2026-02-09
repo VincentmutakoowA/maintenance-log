@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Card, CardAction, CardDescription, CardHeader, CardContent } from '@/components/ui/card'
+import { Card, CardDescription, CardHeader, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
  
 export default function NotFound() {
@@ -8,7 +8,7 @@ export default function NotFound() {
       <Card className="max-w-md w-full">
       <CardHeader>
         <CardDescription className="text-center">
-          Oops! The page you're looking for doesn't exist.
+          Oops! The page you&apos;re looking for doesn&apos;t exist.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-4">

@@ -17,7 +17,7 @@ export function FooterPublic() {
                 <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 md:grid-cols-4">
                     {/* Brand */}
                     <div className="space-y-3">
-                        <h3 className="text-lg font-semibold">{SITE_TITLE}</h3>
+                        <h2 className="text-lg font-semibold">{SITE_TITLE}</h2>
                         <p className="text-sm text-muted-foreground">
                             {COMPANY_SLOGAN}
                         </p>
@@ -25,7 +25,7 @@ export function FooterPublic() {
 
                     {/* Main Pages */}
                     <div className="space-y-3">
-                        <h4 className="text-sm font-semibold">Pages</h4>
+                        <h3 className="text-sm font-semibold">Pages</h3>
                         <ul className="space-y-2 text-sm text-muted-foreground">
                             <li><Link href="/">Home</Link></li>
                             <li><Link href="/products">{PRODUCT_OR_SERVICE}</Link></li>
@@ -36,12 +36,12 @@ export function FooterPublic() {
 
                     {/* Sub Pages */}
                     <div className="space-y-3">
-                        <h4 className="text-sm font-semibold">Resources</h4>
+                        <h3 className="text-sm font-semibold">Resources</h3>
                         <ul className="space-y-2 text-sm text-muted-foreground">
                             <li><Link href="/privacy">Privacy Policy</Link></li>
                             <li><Link href="/terms">Terms of Service</Link></li>
                             <li><Link href="/login">Login</Link></li>
-                            <hr></hr>
+                            <li><hr></hr></li>
                             <li>{LOCATION}</li>
                             <li>{PHONE_NUMBER}</li>
                         </ul>
@@ -49,7 +49,7 @@ export function FooterPublic() {
 
                     {/* Socials */}
                     <div className="space-y-3">
-                        <h4 className="text-sm font-semibold">Social</h4>
+                        <h3 className="text-sm font-semibold">Social</h3>
                         <div className="flex gap-2">
 
                             <Button variant="ghost" size="icon" asChild>

@@ -20,26 +20,25 @@ export default function Page() {
                         className="relative left-[calc(50%-11rem)] aspect-1155/678 w-144.5 -translate-x-1/2 rotate-30 bg-linear-to-tr from-[#ff80b5] to-[#9089fc] opacity-30 sm:left-[calc(50%-30rem)] sm:w-288.75"
                     />
                 </div>
+                
                 <div className="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">
                     <div className="hidden sm:mb-8 sm:flex sm:justify-center">
 
                     </div>
                     <div className="text-center">
                         <h1 className="text-5xl font-semibold tracking-tight text-balance sm:text-7xl">
-                            {HERO_INTRO}
-                        </h1>
+                            {HERO_INTRO} </h1>
                         <p className="mt-8 text-lg font-medium text-pretty text-muted-foreground sm:text-xl/8">
-                            {COMPANY_SLOGAN}
-                        </p>
+                            {COMPANY_SLOGAN} </p>
                         <div className="mt-10 flex items-center justify-center gap-x-6">
                             <Link
                                 href="/products"
                             >
                                 <Button>Browse {PRODUCT_OR_SERVICE}</Button>
                             </Link>
-
                         </div>
                     </div>
+
                 </div>
                 <div
                     aria-hidden="true"
@@ -58,7 +57,6 @@ export default function Page() {
             <div className="w-full max-w-7xl mx-auto px-4">
                 <CarouselFeatured />
                 <div className="text-center mt-10">
-
                 </div>
             </div>
 

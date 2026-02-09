@@ -13,7 +13,7 @@ export default function WhatsAppButton() {
     }
 
     return (
-        <Button onClick={WhatsAppMessage} className="fixed bottom-20 right-0 z rounded-l-full bg-green-500 hover:bg-green-600 text-white p-2 shadow-lg">
+        <Button onClick={WhatsAppMessage} className="fixed bottom-20 right-0 z rounded-l-full bg-green-500 hover:bg-green-600 text-white p-2 shadow-lg" aria-label="WhatsApp Button">
             <MessageCircle className="h-5 w-5 text-background" />
         </Button>
     )

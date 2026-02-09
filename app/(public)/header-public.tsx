@@ -51,10 +51,11 @@ export default function HeaderPublic() {
                 </div>
 
                 <div className="flex lg:hidden gap-5 m-6">
-                    <Link href='/search'>
+                    <Link href='/search' aria-label='search'>
                         <Search></Search>
                     </Link>
                     <button
+                        aria-label='Menu'
                         onClick={() => setMobileMenuOpen(true)}
                         className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5"
                     >

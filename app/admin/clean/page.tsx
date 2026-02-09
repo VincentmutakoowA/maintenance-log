@@ -32,7 +32,7 @@ export default function TempCleanup() {
                 await cleanupTempFiles()
                 alert("Temporary files deleted successfully.")
                 setOpen(false)
-            } catch (error) {
+            } catch {
                 alert("Failed to delete temporary files.")
             }
         })
