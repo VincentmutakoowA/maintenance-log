@@ -32,9 +32,10 @@ export default function HeaderPublic() {
 
     return (
         <header className="w-full z-50">
-            <nav className="mx-auto flex max-w-7xl items-center justify-between  lg:p-3 lg:px-8">
+            <nav className="mx-auto flex max-w-7xl items-center justify-between p-4 lg:p-3 lg:px-8">
+
                 <div className="flex lg:flex-1">
-                    <Link href="/" className="flex items-center gap-4 ml-6">
+                    <Link href="/" className="flex items-center gap-4 lg:ml-6">
                         <span className="sr-only">{SITE_TITLE}</span>
                         <div className="relative aspect-square w-10 rounded-md overflow-hidden">
                             <Image
@@ -47,10 +48,9 @@ export default function HeaderPublic() {
                             {SITE_TITLE}
                         </h2>
                     </Link>
-
                 </div>
 
-                <div className="flex lg:hidden gap-5 m-6">
+                <div className="flex lg:hidden gap-5 ">
                     <Link href='/search' aria-label='search'>
                         <Search></Search>
                     </Link>
@@ -78,23 +78,30 @@ export default function HeaderPublic() {
             </nav>
 
             {mobileMenuOpen && (
-                <div className="fixed inset-0 z-50 p-6 bg-background lg:hidden">
+                <div className="fixed inset-0 z-50 p-4 bg-background lg:hidden">
+
                     <div className="flex items-center justify-between">
-                        <Image
-                            src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
-                            alt={SITE_TITLE}
-                            width={32}
-                            height={32}
-                            className="h-6"
-                        />
+                        <Link href="/" className="flex items-center gap-4">
+                            <span className="sr-only">{SITE_TITLE}</span>
+                            <div className="relative aspect-square w-10 rounded-md overflow-hidden">
+                                <Image
+                                    fill
+                                    alt="Logo"
+                                    src="/logo.png"
+                                />
+                            </div>
+                            <h2 className="scroll-m-20 text-3xl font-semibold tracking-tight first:mt-0">
+                                {SITE_TITLE}
+                            </h2>
+                        </Link>
                         <button onClick={() => setMobileMenuOpen(false)}>
                             <X className="size-6" />
                         </button>
                     </div>
 
                     <div className="mt-6 space-y-2">
-                        <Link className="block rounded-lg px-3 py-2 font-semibold" href='/products'>{PRODUCT_OR_SERVICE}</Link>
-                        <Link className="block rounded-lg px-3 py-2 font-semibold" href='/about'>About us</Link>
+                        <Link className="block rounded-lg px-3 py-2 font-semibold" href='/products' onClick={() => { setMobileMenuOpen(false) }}>{PRODUCT_OR_SERVICE}</Link>
+                        <Link className="block rounded-lg px-3 py-2 font-semibold" href='/about' onClick={() => { setMobileMenuOpen(false) }}>About us</Link>
                         <button
                             onClick={() => setMobileProductOpen((v) => !v)}
                             className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-base font-semibold text-gray-900 dark:text-white"
