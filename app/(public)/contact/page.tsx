@@ -1,7 +1,7 @@
 import {
     CONTACT_EMAIL,
     CONTACT_PHONE,
-    CONTACT_LOCATION,
+    LOCATION,
     GOOGLE_MAP_IFRAME_URL,
 } from '@/lib/config'
 
@@ -50,15 +50,15 @@ export default function ContactPage() {
                     </CardHeader>
                     <CardContent>
                         <p className="text-sm text-muted-foreground">
-                            {CONTACT_LOCATION}
+                            {LOCATION}
                         </p>
                     </CardContent>
                 </Card>
             </div>
 
-            <Card>
+            <Card className='p-0'>
                 <CardHeader>
-                    <CardTitle>Find us</CardTitle>
+                    <CardTitle className='pt-6'>Find us</CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
                     <iframe

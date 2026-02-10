@@ -5,11 +5,7 @@ import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { X } from "lucide-react"
 import Image from "next/image"
-import {
-    Dropzone,
-    DropzoneContent,
-    DropzoneEmptyState,
-} from "@/components/kibo-ui/dropzone"
+import { Dropzone, DropzoneContent, DropzoneEmptyState } from "@/components/kibo-ui/dropzone"
 import { Spinner } from "@/components/ui/spinner"
 
 type Props = {
@@ -74,20 +70,18 @@ export default function ProductMediaUpload({
         <div className="space-y-4 borde rounded-xl">
             <Dropzone
                 disabled={uploading}
-                accept={{accept: []}}
+                accept={{ accept: [] }}
                 onDrop={(files) => uploadFiles(files)}
             >
-                <DropzoneContent>
-                    {uploading ? (
-                        <div className="flex items-center justify-center h-full">
-                            <Spinner className="h-4 w-4" />
-                        </div>
-                    ) : (
-                        <DropzoneEmptyState>
-                            Drag & drop files here, or click to upload
-                        </DropzoneEmptyState>
-                    )}
-                </DropzoneContent>
+                {uploading ? (
+                    <div className="flex items-center justify-center h-full">
+                        <Spinner className="size-6" />
+                    </div>
+                ) : (
+                    <DropzoneEmptyState>
+                        Drag & drop files here, or click to upload
+                    </DropzoneEmptyState>
+                )}
             </Dropzone>
 
             <div className="grid grid-cols-3 gap-2">

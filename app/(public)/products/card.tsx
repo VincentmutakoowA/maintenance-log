@@ -8,7 +8,7 @@ export default function ProductCard({ product }: { product: TypeProductCard }) {
     console.log('Product, ', product.cover_url)
 
     return (
-        <Card className={`pt-0 ${product.featured ? 'border border-primary' : ''} relative overflow-hidden`}>
+        <Card className={`pt-0 ${product.featured ? 'border border-primary' : 'border'} relative overflow-hidden`}>
 
             <div className="relative aspect-[16/9] w-full">
                 <Image

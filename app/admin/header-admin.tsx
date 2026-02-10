@@ -26,9 +26,11 @@ export default function HeaderAdmin() {
         <header className="w-full z-50">
             <nav className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:p-3 lg:px-8">
                 <div className="flex lg:flex-1 gap-2">
-                    <h2 className="scroll-m-20 text-3xl font-semibold tracking-tight first:mt-0">
-                        Admin
-                    </h2>
+                    <Link href='/admin'>
+                        <h2 className="scroll-m-20 text-3xl font-semibold tracking-tight first:mt-0">
+                            Admin
+                        </h2>
+                    </Link>
                 </div>
 
                 <div className="flex lg:hidden">
@@ -67,7 +69,7 @@ export default function HeaderAdmin() {
             </nav>
 
             {mobileMenuOpen && (
-                <div className="fixed inset-0 z-50 p-6 dark:bg-background lg:hidden">
+                <div className="fixed inset-0 z-50 p-6 bg-background lg:hidden">
 
                     <div className="flex items-center justify-between">
                         <h2 className="scroll-m-20 text-3xl font-semibold tracking-tight first:mt-0">
@@ -81,7 +83,7 @@ export default function HeaderAdmin() {
                     <div className="mt-6 space-y-2">
 
 
-                        <Link className="block rounded-lg px-3 py-2 font-semibold" href='/admin/products'>{PRODUCT_OR_SERVICE}</Link>
+                        <Link className="block rounded-lg px-3 py-2 font-semibold" href='/admin/products' onClick={() => { setMobileMenuOpen(false) }}>{PRODUCT_OR_SERVICE}</Link>
                         <button
                             onClick={() => setMobileProductOpen((v) => !v)}
                             className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-base font-semibold text-gray-900 dark:text-white"
@@ -112,7 +114,7 @@ export default function HeaderAdmin() {
                 </DialogTrigger>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Sign out</DialogTitle>
+                        <DialogTitle >Sign out</DialogTitle>
                         <DialogDescription>
                             Are you sure you want to sign out?
                         </DialogDescription>

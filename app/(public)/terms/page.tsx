@@ -1,9 +1,7 @@
 import {
     COMPANY_NAME,
     TERMS_INTRO,
-    TERMS_USAGE,
-    TERMS_LIMITATION,
-    TERMS_CONTACT,
+    TERMS_AND_CONDITIONS,
 } from "@/lib/config"
 
 import {
@@ -19,40 +17,26 @@ export default function TermsPage() {
             <Card>
                 <CardHeader>
                     <CardTitle className="text-3xl font-bold">
-                        Terms & Conditions
+                        Terms of Service
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                     <p className="text-muted-foreground">
-                        {TERMS_INTRO.replace("{company}", COMPANY_NAME)}
+                        {TERMS_INTRO.replace("{company}", COMPANY_NAME)} By using our platform,
+                        you agree to these Terms of Service.
                     </p>
+                    <p className="text-muted-foreground">Last Updated: {new Date().toLocaleDateString()}</p>
 
-                    <div className="space-y-2">
-                        <h3 className="text-xl font-semibold">
-                            Acceptable use
-                        </h3>
-                        <p className="text-muted-foreground">
-                            {TERMS_USAGE}
-                        </p>
-                    </div>
-
-                    <div className="space-y-2">
-                        <h3 className="text-xl font-semibold">
-                            Limitation of liability
-                        </h3>
-                        <p className="text-muted-foreground">
-                            {TERMS_LIMITATION}
-                        </p>
-                    </div>
-
-                    <div className="space-y-2">
-                        <h3 className="text-xl font-semibold">
-                            Contact
-                        </h3>
-                        <p className="text-muted-foreground">
-                            {TERMS_CONTACT}
-                        </p>
-                    </div>
+                    {TERMS_AND_CONDITIONS.map((section, index) => (
+                        <div key={index} className="space-y-2">
+                            <h2 className="text-l font-semibold">
+                                {section.title}
+                            </h2>
+                            <p className="text-muted-foreground">
+                                {section.description}
+                            </p>
+                        </div>
+                    ))}
                 </CardContent>
             </Card>
         </div>

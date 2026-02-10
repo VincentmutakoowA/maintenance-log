@@ -1,8 +1,7 @@
 import {
     COMPANY_NAME,
     PRIVACY_POLICY_INTRO,
-    PRIVACY_POLICY_DATA,
-    PRIVACY_POLICY_CONTACT,
+    PRIVACY_POLICY,
 } from "@/lib/config"
 
 import {
@@ -25,24 +24,18 @@ export default function PrivacyPolicyPage() {
                     <p className="text-muted-foreground">
                         {PRIVACY_POLICY_INTRO.replace("{company}", COMPANY_NAME)}
                     </p>
+                    <p className="text-muted-foreground">Last Updated: {new Date().toLocaleDateString()}</p>
 
-                    <div className="space-y-2">
-                        <h3 className="text-xl font-semibold">
-                            Information we collect
-                        </h3>
-                        <p className="text-muted-foreground">
-                            {PRIVACY_POLICY_DATA}
-                        </p>
-                    </div>
-
-                    <div className="space-y-2">
-                        <h3 className="text-xl font-semibold">
-                            Contact
-                        </h3>
-                        <p className="text-muted-foreground">
-                            {PRIVACY_POLICY_CONTACT}
-                        </p>
-                    </div>
+                    {PRIVACY_POLICY.map((section, index) => (
+                        <div key={index} className="space-y-2">
+                            <h2 className="text-l font-semibold">
+                                {section.title}
+                            </h2>
+                            <p className="text-muted-foreground">
+                                {section.description}
+                            </p>
+                        </div>
+                    ))}
                 </CardContent>
             </Card>
         </div>

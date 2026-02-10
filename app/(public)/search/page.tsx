@@ -49,7 +49,7 @@ export default function SearchPage() {
 
                 {results.map((product) => (
                     <Link href={`/products/${product.id}`} key={product.id}>
-                        <Card key={product.id}>
+                        <Card key={product.id} className='border'>
                             <CardHeader>
                                 <CardTitle>{product.name}</CardTitle>
                             </CardHeader>

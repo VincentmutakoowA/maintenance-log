@@ -9,7 +9,7 @@ export default function ProductAdminCard({ product }: { product: TypeProductCard
     console.log('Product, ', product.cover_url)
 
     return (
-        <Card className="p-0">
+        <Card className={`p-0 ${product.featured ? 'border border-primary' : 'border'} relative overflow-hidden`}>
 
             <div className="relative w-full  aspect-[16/9]">
                 <Image

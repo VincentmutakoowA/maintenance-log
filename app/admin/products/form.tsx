@@ -22,7 +22,9 @@ import { Spinner } from "@/components/ui/spinner"
 export default function ProductForm({ productId }: { productId?: string }) {
   const supabase = createClient()
 
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [loadingUpdate, setLoadingUpdate] = useState(false)
+  const [loadingDelete, setLoadingDelete] = useState(false)
   const [name, setName] = useState("")
   const [price, setPrice] = useState("")
   const [coverUrl, setCoverUrl] = useState<string | null>(null)
@@ -58,7 +60,17 @@ export default function ProductForm({ productId }: { productId?: string }) {
       }
     }
     loadProduct()
+      .catch(console.error)
+      .finally(() => setLoading(false))
   }, [productId, supabase])
+
+  if (loading && isEdit) {
+    return (
+      <div className="flex items-center justify-center w-full aspect-square">
+        <Spinner className="size-8"/>
+      </div>
+    )
+  }
 
   return (
     <Card className="max-w-xl">
@@ -159,8 +171,8 @@ export default function ProductForm({ productId }: { productId?: string }) {
         </CardContent>
 
         <CardFooter className="flex justify-between">
-          <Button type="submit">
-            {isEdit ? "Update" : "Create"}
+          <Button type="submit" disabled={loadingUpdate} onClick={()=>{setLoadingUpdate(true)}}>
+            {loadingUpdate && <Spinner className="size-4 mr-2" />} {isEdit ? "Update" : "Create"}
           </Button>
 
           {isEdit && (
@@ -184,10 +196,10 @@ export default function ProductForm({ productId }: { productId?: string }) {
                   </DialogClose>
 
                   <Button variant="destructive" onClick={async () => {
-                    setLoading(true)
+                    setLoadingDelete(true)
                     await deleteProductAction(productId!)
-                    setLoading(false)
-                  }} disabled={loading}>Delete {loading && <Spinner />} </Button>
+                    setLoadingDelete(false)
+                  }} disabled={loadingDelete}>Delete {loadingDelete && <Spinner />} </Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>

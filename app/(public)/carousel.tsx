@@ -10,7 +10,7 @@ import Image from "next/image"
 import { useRouter } from "next/navigation"
 import ProductStatus from "@/components/status"
 import Autoplay from "embla-carousel-autoplay"
-import { Link } from "lucide-react"
+import Link from 'next/link'
 import { Button } from "@/components/ui/button"
 import { PRODUCT_OR_SERVICE } from "@/lib/config"
 
@@ -62,9 +62,22 @@ export function CarouselFeatured() {
         <CarouselContent>
           {loading ? (
             Array.from({ length: 4 }).map((_, index) => (
-              <CarouselItem key={index} className="w-full pr-4">
-                <Card className="w-60 h-80 p-0 aspect-square">
-                  <Skeleton className="w-full h-full rounded-t-md " />
+              <CarouselItem
+                key={index}
+                className="md:basis-1/2 lg:basis-1/3">
+                <Card
+                  className="overflow-hidden p-0">
+                  <Skeleton className="w-full h-full rounded-t-md aspect-video" />
+
+                  <CardHeader>
+                    <CardAction>
+                      <Skeleton className="w-20 h-5 rounded-full" />
+                    </CardAction>
+                    <CardTitle><Skeleton className="w-32 h-5 rounded-full" /></CardTitle>
+                    <CardDescription><Skeleton className="w-24 h-4 rounded-full" /></CardDescription>
+                  </CardHeader>
+
+                  <CardContent />
                 </Card>
               </CarouselItem>
             ))
@@ -105,7 +118,7 @@ export function CarouselFeatured() {
 
       <Link href="/products">
         <Button variant="outline">
-          View all {PRODUCT_OR_SERVICE.toLowerCase()}
+          View all {PRODUCT_OR_SERVICE}
         </Button>
       </Link>
     </div>
