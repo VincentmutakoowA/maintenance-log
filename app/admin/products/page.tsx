@@ -2,35 +2,47 @@
 
 import { useEffect, useState } from 'react'
 import { type User } from '@supabase/supabase-js'
-import { Card, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { PRODUCT_OR_SERVICE } from '@/lib/config'
 import { Plus } from 'lucide-react'
 import Link from 'next/link'
 import ProductAdminCard from '@/app/admin/products/card'
 import { TypeProductCard } from '@/lib/types'
-import { getAllProducts } from './actions'
+import { getProductsForPage } from './actions'
 import { Spinner } from '@/components/ui/spinner'
-
-// ...
+import { useSearchParams, useRouter } from 'next/navigation'
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, } from "@/components/ui/pagination"
 
 export default function ProductForm({ user }: { user: User | null }) {
 
     //const [loading, setLoading] = useState(true)
+
     const [products, setProducts] = useState<TypeProductCard[]>([])
     const [loading, setLoading] = useState(true)
+    const [totalPages, setTotalPages] = useState(1)
 
+    const searchParams = useSearchParams()
+    const router = useRouter()
+    const page = Number(searchParams.get('page')) || 1
 
     useEffect(() => {
         const getProducts = async () => {
-            const data = await getAllProducts()
+            const data = await getProductsForPage(page)
             console.log('Data', data)
-            setProducts(data)
+            setProducts(data.products)
+            setTotalPages(data.totalPages)
             setLoading(false)
         }
 
         getProducts()
-    }, [user])
+    }, [user, page])
+
+    function goToPage(newPage: number) {
+        if (newPage < 1) return
+        router.push(`/admin/products?page=${newPage}`)
+    }
+
 
     if (loading) {
         return (
@@ -62,6 +74,20 @@ export default function ProductForm({ user }: { user: User | null }) {
                     />
                 ))}
             </div>
+
+            <CardFooter>
+                <Pagination className='absolute bottom-2 '>
+                    {page > 1 && <PaginationPrevious onClick={() => goToPage(page - 1)} />}
+                    <PaginationContent>
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                            <PaginationItem key={p}>
+                                <PaginationLink onClick={() => goToPage(p)} isActive={p === page}>{p}</PaginationLink>
+                            </PaginationItem>
+                        ))}
+                    </PaginationContent>
+                    {page < totalPages && <PaginationNext onClick={() => goToPage(page + 1)} />}
+                </Pagination>
+            </CardFooter>
 
         </Card>
     )
