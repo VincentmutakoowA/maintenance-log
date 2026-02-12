@@ -24,32 +24,33 @@ export default function MediaSection({ title, loading, urls, type }: MediaSectio
       <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
         {loading
           ? Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className="aspect-square w-full" />
-            ))
+            <Skeleton key={i} className="aspect-square w-full" />
+          ))
           : urls.map((url, index) => (
-              <div
-                key={index}
-                className="relative aspect-square w-full overflow-hidden rounded-2xl"
-              >
-                {type === "image" ? (
-                  <ImageZoom className="relative aspect-square" >
-                    <Image
+            <div
+              key={index}
+              className="relative aspect-square w-full overflow-hidden rounded-2xl"
+            >
+              {type === "image" ? (
+                <ImageZoom className="relative aspect-square" >
+                  <Image
                     src={url}
                     alt={`${title} ${index + 1}`}
                     fill
                     className="object-cover"
                     loading="lazy"
+                    sizes="(max-width: 768px) 100vw,(max-width: 1024px) 50vw, 33vw"
                   />
-                  </ImageZoom>
-                ) : (
-                  <video
-                    src={url}
-                    controls
-                    className="h-full w-full object-cover rounded"
-                  />
-                )}
-              </div>
-            ))}
+                </ImageZoom>
+              ) : (
+                <video
+                  src={url}
+                  controls
+                  className="h-full w-full object-cover rounded"
+                />
+              )}
+            </div>
+          ))}
       </div>
     </div>
   )

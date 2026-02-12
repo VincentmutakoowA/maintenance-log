@@ -17,7 +17,7 @@ export default function ProductCover({
     onUpload: (url: string, path: string) => void
 }) {
     const supabase = createClient()
-    
+
     const [uploading, setUploading] = useState(false)
 
     const [files, setFiles] = useState<File[] | undefined>();
@@ -64,38 +64,40 @@ export default function ProductCover({
     };
 
     return (
-            <Dropzone
-                accept={{ "image/*": [".png", ".jpg", ".jpeg"] }}
-                onError={console.error}
-                maxFiles={1}
-                src={files}
-                onDrop={handleDrop}
-                className='relative aspect-[16/7]'
-            >
-                <DropzoneEmptyState />
-                <DropzoneContent >
-                    {uploading ? (
-                        <div className="flex items-center justify-center h-full">
-                            <Spinner />
-                        </div>
-                    ) : (
-                        filePreview && (
-                            <Image
-                                src={filePreview}
-                                alt="Preview"
-                                className="object-cover"
-                                fill
-                        />
-                    ))}      
-                </DropzoneContent>
-                {url && !filePreview && (
+        <Dropzone
+            accept={{ "image/*": [".png", ".jpg", ".jpeg"] }}
+            onError={console.error}
+            maxFiles={1}
+            src={files}
+            onDrop={handleDrop}
+            className='relative aspect-[16/7]'
+        >
+            <DropzoneEmptyState />
+            <DropzoneContent >
+                {uploading ? (
+                    <div className="flex items-center justify-center h-full">
+                        <Spinner />
+                    </div>
+                ) : (
+                    filePreview && (
                         <Image
-                            src={url}
-                            alt="Current Cover"
+                            src={filePreview}
+                            alt="Preview"
                             className="object-cover"
                             fill
+                            sizes="(max-width: 768px) 100vw,(max-width: 1024px) 50vw, 33vw"
                         />
-                    )}
-            </Dropzone>
+                    ))}
+            </DropzoneContent>
+            {url && !filePreview && (
+                <Image
+                    src={url}
+                    alt="Current Cover"
+                    className="object-cover"
+                    fill
+                    sizes="(max-width: 768px) 100vw,(max-width: 1024px) 50vw, 33vw"
+                />
+            )}
+        </Dropzone>
     )
 }

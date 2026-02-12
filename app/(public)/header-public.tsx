@@ -42,6 +42,7 @@ export default function HeaderPublic() {
                                 fill
                                 alt="Logo"
                                 src="/logo.png"
+                                sizes="(max-width: 768px) 100vw,(max-width: 1024px) 50vw, 33vw"
                             />
                         </div>
                         <h2 className="scroll-m-20 text-3xl font-semibold tracking-tight first:mt-0">
@@ -88,6 +89,7 @@ export default function HeaderPublic() {
                                     fill
                                     alt="Logo"
                                     src="/logo.png"
+                                    sizes="(max-width: 768px) 100vw,(max-width: 1024px) 50vw, 33vw"
                                 />
                             </div>
                             <h2 className="scroll-m-20 text-3xl font-semibold tracking-tight first:mt-0">

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Menu, X, ChevronDown, PieChart } from 'lucide-react'
+import { Menu, X, ChevronDown, PieChart, Search } from 'lucide-react'
 import { Button } from '../../components/ui/button'
 import { PRODUCT_OR_SERVICE } from '@/lib/config'
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from "@/components/ui/navigation-menu"
@@ -33,10 +33,13 @@ export default function HeaderAdmin() {
                     </Link>
                 </div>
 
-                <div className="flex lg:hidden">
+                <div className="flex lg:hidden gap-5">
+                    <Link href='/admin/search' aria-label='search'>
+                        <Search></Search>
+                    </Link>
                     <button
                         onClick={() => setMobileMenuOpen(true)}
-                        className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700 dark:text-gray-400"
+                        className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5"
                     >
                         <Menu className="size-6" />
                     </button>
@@ -66,6 +69,11 @@ export default function HeaderAdmin() {
                 <div className="hidden lg:flex lg:flex-1 lg:justify-end">
                     <Button variant="ghost" onClick={() => setSignOutOpen(true)}>Sign out</Button>
                 </div>
+
+
+                <div className="hidden lg:flex lg:flex-1 lg:justify-end">
+                    <Link href='/admin/search'> <Search className='w-5'></Search></Link>
+                </div>
             </nav>
 
             {mobileMenuOpen && (
@@ -76,7 +84,7 @@ export default function HeaderAdmin() {
                             Admin
                         </h2>
                         <button onClick={() => setMobileMenuOpen(false)}>
-                            <X className="size-6 text-gray-700 dark:text-gray-400" />
+                            <X className="size-6" />
                         </button>
                     </div>
 
