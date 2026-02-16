@@ -16,6 +16,7 @@ import ProductMediaUpload from "./media-upload"
 import { PRODUCT_IMAGE_BUCKET, PRODUCT_VIDEO_BUCKET } from "@/lib/config"
 import ProductFeaturedSelect from "./featured-select"
 import { Spinner } from "@/components/ui/spinner"
+import { useFormStatus } from "react-dom"
 
 
 
@@ -26,7 +27,7 @@ export default function ProductForm({ productId }: { productId?: string }) {
   const [loadingUpdate, setLoadingUpdate] = useState(false)
   const [loadingDelete, setLoadingDelete] = useState(false)
   const [name, setName] = useState("")
-  const [price, setPrice] = useState("")
+  const [price, setPrice] = useState<string | null>(null)
   const [coverUrl, setCoverUrl] = useState<string | null>(null)
   const [coverPath, setCoverPath] = useState<string | null>(null)
   const [availability, setAvailability] = useState<AvailabilityStatus>("available")
@@ -42,7 +43,7 @@ export default function ProductForm({ productId }: { productId?: string }) {
 
   // fetch product if editing
   useEffect(() => {
-    if (!productId) return
+    if (!productId) return setLoading(false)
     const loadProduct = async () => {
       const data = await getProductById(productId)
       if (data) {
@@ -62,7 +63,7 @@ export default function ProductForm({ productId }: { productId?: string }) {
     loadProduct()
       .catch(console.error)
       .finally(() => setLoading(false))
-  }, [productId, supabase])
+  }, [productId])
 
   if (loading && isEdit) {
     return (
@@ -72,8 +73,19 @@ export default function ProductForm({ productId }: { productId?: string }) {
     )
   }
 
+  function SubmitButton({ isEdit }: { isEdit: boolean }) {
+  const { pending } = useFormStatus()
   return (
-    <Card className="max-w-xl">
+    <Button type="submit" disabled={pending}>
+      {pending && <Spinner className="size-4 mr-2" />}
+      {isEdit ? "Update" : "Create"}
+    </Button>
+  )
+}
+
+
+  return (
+    <Card className="max-w-md w-full mx-auto">
 
       <CardHeader>
         <CardTitle>{isEdit ? "Edit" : "Add"}</CardTitle>
@@ -91,7 +103,6 @@ export default function ProductForm({ productId }: { productId?: string }) {
         <input type="hidden" name="videos_urls" value={JSON.stringify(videos)} />
         <input type="hidden" name="videos_paths" value={JSON.stringify(videoPaths)} />
 
-
         <CardContent className="space-y-4">
           <Input
             name="name"
@@ -105,9 +116,8 @@ export default function ProductForm({ productId }: { productId?: string }) {
             name="price"
             type="number"
             placeholder="Price"
-            value={price}
+            value={price ?? undefined}
             onChange={e => setPrice(e.target.value)}
-            required
           />
 
           <ProductAvailabilitySelect
@@ -171,9 +181,7 @@ export default function ProductForm({ productId }: { productId?: string }) {
         </CardContent>
 
         <CardFooter className="flex justify-between">
-          <Button type="submit" disabled={loadingUpdate} onClick={()=>{setLoadingUpdate(true)}}>
-            {loadingUpdate && <Spinner className="size-4 mr-2" />} {isEdit ? "Update" : "Create"}
-          </Button>
+          <SubmitButton isEdit={isEdit} />
 
           {isEdit && (
 

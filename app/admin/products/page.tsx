@@ -54,7 +54,7 @@ export default function ProductForm({ user }: { user: User | null }) {
 
 
     return (
-        <Card className="relative form-widget w-full max-w-4xl">
+        <Card className="relative form-widget w-full max-w-7xl ">
 
             <CardHeader className='flex justify-between'>
                 <CardTitle>{PRODUCT_OR_SERVICE}</CardTitle>
@@ -66,7 +66,7 @@ export default function ProductForm({ user }: { user: User | null }) {
                 </Link>
             </CardHeader>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 px-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 px-4">
                 {products.map(product => (
                     <ProductAdminCard
                         key={product.id}

@@ -35,6 +35,7 @@ export const ImageZoom = ({
     )}
   >
     <Zoom
+    
       classDialog={cn(
         "[&::backdrop]:hidden",
         "[&[open]]:fixed [&[open]]:m-0 [&[open]]:h-dvh [&[open]]:max-h-none [&[open]]:w-dvw [&[open]]:max-w-none [&[open]]:overflow-hidden [&[open]]:border-0 [&[open]]:bg-transparent [&[open]]:p-0",

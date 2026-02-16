@@ -20,7 +20,7 @@ export default function ProductInfo({ productId }: { productId?: string }) {
 
     const [loading, setLoading] = useState(true)
     const [name, setName] = useState("")
-    const [price, setPrice] = useState("")
+    const [price, setPrice] = useState<string | null>(null)
     const [coverUrl, setCoverUrl] = useState<string | null>(null)
     const [status, setStatus] = useState<AvailabilityStatus>("available")
     const [description, setDescription] = useState<string | null>(null)
@@ -36,7 +36,7 @@ export default function ProductInfo({ productId }: { productId?: string }) {
             const data = await getProductById(productId)
             if (data) {
                 setName(data.name)
-                setPrice(String(data.price))
+                setPrice(data.price)
                 setCoverUrl(data.cover_url)
                 setStatus(data.availability)
                 setDescription(data.description)
@@ -106,7 +106,7 @@ export default function ProductInfo({ productId }: { productId?: string }) {
 
             <CardContent className="grid gap-2 grid-cols-1 sm:grid-cols-2">
                 <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
-                    {loading ? <Skeleton className="h-6 w-24" /> : `${CURRENCY} ${price}`}
+                    {loading ? <Skeleton className="h-6 w-24" /> : `${price === null ? '' : `${CURRENCY} ${price}`}`}
                 </h4>
                 {loading ? <Skeleton className="h-10 w-full sm:w-auto" /> : <Button className="w-full sm:w-auto" onClick={WhatsAppMessage}>
                     <MessageCircle className="ml-2 h-4 w-4" />

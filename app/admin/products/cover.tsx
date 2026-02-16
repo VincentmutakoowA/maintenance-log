@@ -16,31 +16,18 @@ export default function ProductCover({
     url: string | null
     onUpload: (url: string, path: string) => void
 }) {
+
     const supabase = createClient()
-
-    const [uploading, setUploading] = useState(false)
-
-    const [files, setFiles] = useState<File[] | undefined>();
-    const [filePreview, setFilePreview] = useState<string | undefined>();
+    const [loading, setLoading] = useState(false)
+    const [preview, setPreview] = useState<string | undefined>();
 
     const handleDrop = async (files: File[]) => {
 
-        setUploading(true)
-        setFiles(files);
-        if (files.length > 0) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                if (typeof e.target?.result === "string") {
-                    setFilePreview(e.target?.result);
-                }
-            };
-            reader.readAsDataURL(files[0]);
-        }
+        setLoading(true)
         const file = files[0];
         const fileExt = file.name.split('.').pop();
         const filePath = `temp/${uid}-${crypto.randomUUID()}.${fileExt}`;
         console.log(file.size, file.type);
-
         const { error: uploadError } = await supabase
             .storage
             .from(PRODUCT_COVER_BUCKET)
@@ -51,16 +38,17 @@ export default function ProductCover({
         if (uploadError) {
             console.error(uploadError);
             alert('Something went wrong during upload');
+            setLoading(false);
             return;
         }
-
         const { data } = supabase
             .storage
             .from(PRODUCT_COVER_BUCKET)
             .getPublicUrl(filePath);
 
         onUpload(data.publicUrl, filePath);
-        setUploading(false)
+        setPreview(data.publicUrl);
+        setLoading(false)
     };
 
     return (
@@ -68,28 +56,28 @@ export default function ProductCover({
             accept={{ "image/*": [".png", ".jpg", ".jpeg"] }}
             onError={console.error}
             maxFiles={1}
-            src={files}
             onDrop={handleDrop}
             className='relative aspect-[16/7]'
         >
-            <DropzoneEmptyState />
+            {loading ? (
+                <div className="flex items-center justify-center h-full">
+                    <Spinner />
+                </div>
+            ) : (
+                preview ? (
+                    <Image
+                        src={preview}
+                        alt="Preview"
+                        className="object-cover"
+                        fill
+                        sizes="(max-width: 768px) 100vw,(max-width: 1024px) 50vw, 33vw"
+                    />
+                ) : (<DropzoneEmptyState />))}
+
             <DropzoneContent >
-                {uploading ? (
-                    <div className="flex items-center justify-center h-full">
-                        <Spinner />
-                    </div>
-                ) : (
-                    filePreview && (
-                        <Image
-                            src={filePreview}
-                            alt="Preview"
-                            className="object-cover"
-                            fill
-                            sizes="(max-width: 768px) 100vw,(max-width: 1024px) 50vw, 33vw"
-                        />
-                    ))}
+
             </DropzoneContent>
-            {url && !filePreview && (
+            {url && !preview && (
                 <Image
                     src={url}
                     alt="Current Cover"

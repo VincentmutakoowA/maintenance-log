@@ -4,6 +4,7 @@ import { Button } from "../../../components/ui/button";
 import { TypeProductCard } from "@/lib/types";
 import ProductStatus from "@/components/status";
 import Image from "next/image";
+import { CURRENCY } from "@/lib/config";
 
 export default function ProductAdminCard({ product }: { product: TypeProductCard }) {
     console.log('Product, ', product.cover_url)
@@ -29,7 +30,7 @@ export default function ProductAdminCard({ product }: { product: TypeProductCard
                     </Link>
                 </CardAction>
                 <CardTitle> {product.name}</CardTitle>
-                <p>${product.price}</p>
+                <p>{product.price ? `${CURRENCY} ${product.price}` : ''}</p>
 
             </CardHeader>
             <CardFooter></CardFooter>

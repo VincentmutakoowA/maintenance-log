@@ -39,7 +39,7 @@ export async function getProductsForPage(page: number) {
 
 
 
-export async function saveProductAction(formData: FormData) {
+export async function saveProductAction(formData: FormData, ) {
 
     const supabase = await createClient()
 
@@ -54,10 +54,8 @@ export async function saveProductAction(formData: FormData) {
     const description = formData.get("description") as string | null
     const featured = formData.get("featured") === "true"
     const availability = formData.get("availability") as string | null
-
     const imagesInput = JSON.parse(formData.get("images_paths") as string || "[]")
     const videosInput = JSON.parse(formData.get("videos_paths") as string || "[]")
-
     let coverPath = formData.get("cover_path") as string | null
     let coverUrl = formData.get("cover_url") as string | null
 
@@ -104,10 +102,10 @@ export async function saveProductAction(formData: FormData) {
 
         // Move media
         const { paths: imagePaths, urls: imageUrls } =
-            await moveFromTemp("product_images", imagesInput, productId, movedFiles)
+            await moveFromTemp(PRODUCT_IMAGE_BUCKET, imagesInput, productId, movedFiles)
 
         const { paths: videoPaths, urls: videoUrls } =
-            await moveFromTemp("product_videos", videosInput, productId, movedFiles)
+            await moveFromTemp(PRODUCT_VIDEO_BUCKET, videosInput, productId, movedFiles)
 
         if (coverPath) {
             const { paths, urls } = await moveFromTemp(
@@ -125,8 +123,8 @@ export async function saveProductAction(formData: FormData) {
         const removedVideos = oldVideos.filter(p => !videoPaths.includes(p))
         const removedCover = oldCover && oldCover !== coverPath ? [oldCover] : []
 
-        await deletePaths("product_images", removedImages)
-        await deletePaths("product_videos", removedVideos)
+        await deletePaths(PRODUCT_IMAGE_BUCKET, removedImages)
+        await deletePaths(PRODUCT_VIDEO_BUCKET, removedVideos)
         await deletePaths(PRODUCT_COVER_BUCKET, removedCover)
 
         // Final DB update

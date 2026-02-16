@@ -2,6 +2,7 @@ import { Card, CardHeader, CardAction } from "@/components/ui/card";
 import Image from "next/image";
 import { TypeProductCard } from "@/lib/types";
 import ProductStatus from "@/components/status";
+import { CURRENCY } from "@/lib/config";
 
 export default function ProductCard({ product }: { product: TypeProductCard }) {
 
@@ -27,7 +28,8 @@ export default function ProductCard({ product }: { product: TypeProductCard }) {
                 </CardAction>
 
                 <h3 className="font-semibold">{product.name}</h3>
-                <p>${product.price}</p>
+                <p>{product.price ? `${CURRENCY} ${product.price}` : ''}</p>
+
             </CardHeader>
 
             {product.featured && (

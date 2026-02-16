@@ -11,7 +11,7 @@ export default function Layout({
       <HeaderAdmin />
       <div className="px-4 border-b w-full flex justify-center "></div>
 
-      <div className="p-4 w-full flex justify-center">
+      <div className="p-4 w-full flex justify-center min-h-screen">
         {children}
       </div>
 
