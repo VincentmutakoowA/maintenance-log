@@ -18,7 +18,7 @@ export async function login(formData: FormData) {
   const { error } = await supabase.auth.signInWithPassword(data)
 
   if (error) {
-    redirect('/error')
+    redirect(`/error?message=${error.message}`)
   }
 
   revalidatePath('/', 'layout')
@@ -26,13 +26,7 @@ export async function login(formData: FormData) {
 }
 
 
-type SignupState = {
-  success: boolean
-  message: string
-}
-
-export async function signup(prevState: SignupState,
-  formData: FormData):Promise<SignupState> {
+export async function signup(formData: FormData) {
   const supabase = await createClient()
 
   // type-casting here for convenience
@@ -45,14 +39,10 @@ export async function signup(prevState: SignupState,
   const { error } = await supabase.auth.signUp(data)
 
   if (error) {
-    redirect('/error')
+    console.error("Err", error)
+    redirect(`/error?message=${error.message}`)
   }
 
-  return {
-    success: true,
-    message: "Check your email to confirm your account"
-  }
-
-  //revalidatePath('/', 'layout')
-  //redirect('/account')
+  //return revalidatePath('/login', 'layout') && 
+  redirect('/login/confirm')
 }

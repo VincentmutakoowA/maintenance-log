@@ -3,67 +3,24 @@
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { useActionState, useState } from "react"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogClose,
-  DialogFooter,
-} from "@/components/ui/dialog"
-import {
-  Field,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field"
+import { useState } from "react"
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Eye, EyeClosed } from "lucide-react"
 
-const initialState = { success: false, message: "" }
-
-type SignupState = {
-  success: boolean
-  message: string
-}
-
 type LoginFormProps = {
   loginAction: (formData: FormData) => void
-  signupAction: (
-    prevState: SignupState,
-    formData: FormData
-  ) => Promise<SignupState>
+  signupAction: ( formData: FormData ) => void
   className?: string
 }
 
-export function LoginForm({
-  className,
-  loginAction,
-  signupAction,
-}: LoginFormProps) {
-  const [signupState, signupFormAction] =
-    useActionState(signupAction, initialState)
+
+export function LoginForm({ className, loginAction, signupAction,}: LoginFormProps) {
 
   const [passwordView, setPasswordView] = useState(false)
 
   return (
     <div className={cn("flex flex-col gap-6", className)}>
-      <Dialog open={signupState.success}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm your email</DialogTitle>
-            <DialogDescription>
-              {signupState.message}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="sm:justify-start">
-            <DialogClose asChild>
-              <Button type="button">Close</Button>
-            </DialogClose>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       <Card className="overflow-hidden p-0 max-w-sm mx-auto w-full">
         <CardContent className="grid p-0">
@@ -116,12 +73,7 @@ export function LoginForm({
 
               <Field>
                 <Button formAction={loginAction}>Login</Button>
-                <Button
-                  formAction={signupFormAction}
-                  variant="outline"
-                >
-                  Sign up
-                </Button>
+                <Button formAction={signupAction} variant="outline" >  Sign up </Button>
               </Field>
             </FieldGroup>
           </form>

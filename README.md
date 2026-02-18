@@ -6,6 +6,7 @@ Create supabase account. Login to dashboard
 Create project.
 Add types
 Add tables, add storage.
+Add function to create profile
 Configure Row Level Security
 
 ## Set up env variables
