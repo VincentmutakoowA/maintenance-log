@@ -13,7 +13,7 @@ import ProductAvailabilitySelect from "./availability-select"
 import { AvailabilityStatus } from "@/lib/types"
 import { Textarea } from "@/components/ui/textarea"
 import ProductMediaUpload from "./media-upload"
-import { PRODUCT_IMAGE_BUCKET, PRODUCT_VIDEO_BUCKET } from "@/lib/config"
+import { PRODUCT_COVER_BUCKET, PRODUCT_IMAGE_BUCKET, PRODUCT_VIDEO_BUCKET } from "@/lib/config"
 import ProductFeaturedSelect from "./featured-select"
 import { Spinner } from "@/components/ui/spinner"
 import { useFormStatus } from "react-dom"
@@ -144,6 +144,7 @@ export default function ProductForm({ productId }: { productId?: string }) {
           <ProductCover
             uid={productId ?? "new"}
             url={coverUrl}
+            bucket={PRODUCT_COVER_BUCKET}
             onUpload={(url, path) => {
               setCoverUrl(url)
               setCoverPath(path)

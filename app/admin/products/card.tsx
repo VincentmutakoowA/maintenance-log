@@ -13,13 +13,16 @@ export default function ProductAdminCard({ product }: { product: TypeProductCard
         <Card className={`p-0 ${product.featured ? 'border border-primary' : 'border'} relative overflow-hidden`}>
 
             <div className="relative w-full  aspect-[16/9]">
-                <Image
-                    src={product.cover_url || ''}
-                    alt="Product cover"
-                    className="relative object-cover"
-                    fill
-                    sizes="(max-width: 768px) 100vw,(max-width: 1024px) 50vw, 33vw"
-                />
+                {product.cover_url ?
+                    <Image
+                        src={product.cover_url || ''}
+                        alt="Product cover"
+                        className="relative object-cover"
+                        fill
+                        sizes="(max-width: 768px) 100vw,(max-width: 1024px) 50vw, 33vw"
+                    /> : <div className="flex items-center justify-center w-full h-full bg-muted">
+                        <span className="text-sm text-muted-foreground">No image</span>
+                    </div>}
             </div>
 
             <CardHeader>

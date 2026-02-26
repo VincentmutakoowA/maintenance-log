@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { searchProducts } from './actions'
 import Link from 'next/link'
 import { TypeProductCard } from '@/lib/types'
+import { Spinner } from '@/components/ui/spinner'
 
 export default function SearchPage() {
     const [query, setQuery] = useState('')
@@ -40,10 +41,22 @@ export default function SearchPage() {
 
             <div className="w-full grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {!isPending && query && results.length === 0 && (
-                    <Card className='col-start-1 col-end-4'>
-                        <CardContent className="p-6 text-center text-muted-foreground ">
-                            No results found.
-                        </CardContent>
+                    <Card className='col-start-1 col-end-4 flex items-center justify-center '>
+                        <div className='h-18  flex items-center justify-center '>
+                            <CardContent className="  text-center text-muted-foreground ">
+                                No results found.
+                            </CardContent>
+                        </div>
+                    </Card>
+                )}
+
+                {isPending && (
+                    <Card className='col-start-1 col-end-4 flex items-center justify-center '>
+                        <div className='h-18  flex items-center justify-center '>
+                            <CardContent className="  text-center text-muted-foreground ">
+                                <Spinner className='size-6' />
+                            </CardContent>
+                        </div>
                     </Card>
                 )}
 

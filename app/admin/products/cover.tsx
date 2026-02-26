@@ -10,10 +10,12 @@ import { Spinner } from '@/components/ui/spinner';
 export default function ProductCover({
     uid,
     url,
+    bucket,
     onUpload,
 }: {
     uid: string | null
     url: string | null
+    bucket: string
     onUpload: (url: string, path: string) => void
 }) {
 
@@ -30,7 +32,7 @@ export default function ProductCover({
         console.log(file.size, file.type);
         const { error: uploadError } = await supabase
             .storage
-            .from(PRODUCT_COVER_BUCKET)
+            .from(bucket)
             .upload(filePath, file, {
                 contentType: file.type, upsert: true
             });
@@ -43,7 +45,7 @@ export default function ProductCover({
         }
         const { data } = supabase
             .storage
-            .from(PRODUCT_COVER_BUCKET)
+            .from(bucket)
             .getPublicUrl(filePath);
 
         onUpload(data.publicUrl, filePath);
