@@ -9,7 +9,7 @@ import WhatsAppButton from "./whatsapp-button"
 export function FooterPublic() {
 
     return (
-        <footer className=" w-full">
+        <footer className=" w-full z-10">
 
             <WhatsAppButton />
 
