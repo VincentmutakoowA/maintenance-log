@@ -1,26 +1,22 @@
 // ==============================
 // App / Site basics
 
-import { title } from "process"
-
 // ==============================
-export const SITE_TITLE = "Next Autos"
-export const COMPANY_NAME = "Next Autos ltd"
-export const PRODUCT_OR_SERVICE = "Cars"
-export const CURRENCY = "USD"
+export const SITE_TITLE = "USJM"
+export const COMPANY_NAME = "University of Saint Joseph Mbarara"
+export const PRODUCT_OR_SERVICE = "Maintenance"
+export const CURRENCY = "UGX"
 
 // ==============================
 // Company identity
 // ==============================
-export const COMPANY_SLOGAN = "Your trusted partner in finding the perfect car."
-export const COMPANYY_DESCRIPTION = "Next Autos is an innovative online platform dedicated to connecting car buyers and sellers. We offer a seamless experience with a wide range of vehicles, competitive prices, and exceptional customer service."
-export const COMPANY_MISSION = "To simplify the car buying and selling experience through innovation and exceptional service."
-export const COMPAN_VISION = "To be the leading online marketplace for cars, connecting buyers and sellers worldwide."
+export const COMPANY_SLOGAN = "Maintenance Log"
+export const COMPANYY_DESCRIPTION = "A comprehensive maintenance log application designed to help you keep track of all laboratory maintenance activities in one place."
 
 // ==============================
 // Hero / marketing copy
 // ==============================
-export const HERO_INTRO = "Discover your next car"
+export const HERO_INTRO = "Computer laboratory"
 
 // ==============================
 // Contact information
