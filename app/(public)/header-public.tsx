@@ -4,11 +4,10 @@ import { useState } from 'react'
 import {
     Menu,
     X,
-    ChevronDown,
     Search,
 } from 'lucide-react'
 import { Button } from '../../components/ui/button'
-import { PHONE_NUMBER, PRODUCT_OR_SERVICE, SITE_TITLE } from '@/lib/config'
+import { PRODUCT_OR_SERVICE, SITE_TITLE } from '@/lib/config'
 import Link from 'next/link'
 import Image from 'next/image'
 
@@ -23,11 +22,11 @@ export default function HeaderPublic() {
                 <div className="flex lg:flex-1">
                     <Link href="/" className="flex items-center gap-4 lg:ml-6">
                         <span className="sr-only">{SITE_TITLE}</span>
-                        <div className="relative aspect-square w-10 rounded-md overflow-hidden">
+                        <div className="relative aspect-square w-10  overflow-hidden">
                             <Image
                                 fill
                                 alt="Logo"
-                                src="/logo.png"
+                                src="/usjm-logo.png"
                                 sizes="(max-width: 768px) 100vw,(max-width: 1024px) 50vw, 33vw"
                             />
                         </div>
@@ -70,11 +69,11 @@ export default function HeaderPublic() {
                     <div className="flex items-center justify-between">
                         <Link href="/" className="flex items-center gap-4">
                             <span className="sr-only">{SITE_TITLE}</span>
-                            <div className="relative aspect-square w-10 rounded-md overflow-hidden">
+                            <div className="relative aspect-square w-10 overflow-hidden">
                                 <Image
                                     fill
                                     alt="Logo"
-                                    src="/logo.png"
+                                    src="/usjm-logo.png"
                                     sizes="(max-width: 768px) 100vw,(max-width: 1024px) 50vw, 33vw"
                                 />
                             </div>
