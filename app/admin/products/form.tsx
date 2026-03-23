@@ -13,7 +13,6 @@ import ProductAvailabilitySelect from "./availability-select"
 import { AvailabilityStatus } from "@/lib/types"
 import { Textarea } from "@/components/ui/textarea"
 import ProductMediaUpload from "./media-upload"
-import { PRODUCT_COVER_BUCKET, PRODUCT_IMAGE_BUCKET, PRODUCT_VIDEO_BUCKET } from "@/lib/config"
 import ProductFeaturedSelect from "./featured-select"
 import { Spinner } from "@/components/ui/spinner"
 import { useFormStatus } from "react-dom"
@@ -140,44 +139,6 @@ export default function ProductForm({ productId }: { productId?: string }) {
           </Textarea>
 
           <Label>Cover Image</Label>
-
-          <ProductCover
-            uid={productId ?? "new"}
-            url={coverUrl}
-            bucket={PRODUCT_COVER_BUCKET}
-            onUpload={(url, path) => {
-              setCoverUrl(url)
-              setCoverPath(path)
-            }}
-          />
-
-          <Label>Images</Label>
-          <ProductMediaUpload
-            bucket={PRODUCT_IMAGE_BUCKET}
-            uid={productId ?? "new"}
-            urls={images}
-            paths={imagePaths}
-            accept="image/*"
-            onChange={(urls, paths) => {
-              setImages(urls)
-              setImagePaths(paths)
-            }}
-          >
-          </ProductMediaUpload>
-
-          <Label>Videos</Label>
-          <ProductMediaUpload
-            bucket={PRODUCT_VIDEO_BUCKET}
-            uid={productId ?? "new"}
-            urls={videos}
-            paths={videoPaths}
-            accept="video/*"
-            onChange={(urls, paths) => {
-              setVideos(urls)
-              setVideoPaths(paths)
-            }}
-          >
-          </ProductMediaUpload>
 
         </CardContent>
 

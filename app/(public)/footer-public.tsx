@@ -1,8 +1,6 @@
 import Link from "next/link"
 import { Separator } from "@/components/ui/separator"
-import { Button } from "@/components/ui/button"
-import { Instagram,  } from "lucide-react"
-import { COMPANY_INSTAGRAM_URL, COMPANY_SLOGAN, LOCATION, PHONE_NUMBER, PRODUCT_OR_SERVICE, SITE_TITLE } from "@/lib/config"
+import { COMPANY_SLOGAN, SITE_TITLE } from "@/lib/config"
 import { ThemeSwitcher } from "../../components/kibo-ui/theme-switcher"
 
 export function FooterPublic() {

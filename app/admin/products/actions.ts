@@ -1,6 +1,5 @@
 "use server"
 
-import { PRODUCT_COVER_BUCKET, PRODUCT_IMAGE_BUCKET, PRODUCT_VIDEO_BUCKET } from "@/lib/config"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { moveFromTemp } from "./functions"

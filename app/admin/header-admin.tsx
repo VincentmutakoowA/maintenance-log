@@ -7,6 +7,7 @@ import { PRODUCT_OR_SERVICE } from '@/lib/config'
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from "@/components/ui/navigation-menu"
 import Link from 'next/link'
 import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogContent, DialogTrigger, DialogClose } from '@/components/ui/dialog'
+import { ThemeSwitcher } from '@/components/kibo-ui/theme-switcher'
 
 const products = [
     {
@@ -28,7 +29,7 @@ export default function HeaderAdmin() {
                 <div className="flex lg:flex-1 gap-2">
                     <Link href='/admin'>
                         <h2 className="scroll-m-20 text-3xl font-semibold tracking-tight first:mt-0">
-                            Admin
+                            Dashboard
                         </h2>
                     </Link>
                 </div>
@@ -65,14 +66,13 @@ export default function HeaderAdmin() {
                         </NavigationMenuList>
                     </NavigationMenu>
                 </div>
+                <div className="hidden lg:flex lg:flex-1 lg:justify-end">
+                    {/*<Link href='/admin/search'> <Search className='w-5'></Search></Link>*/}
+                    <ThemeSwitcher />
+                </div>
 
                 <div className="hidden lg:flex lg:flex-1 lg:justify-end">
                     <Button variant="ghost" onClick={() => setSignOutOpen(true)}>Sign out</Button>
-                </div>
-
-
-                <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-                    <Link href='/admin/search'> <Search className='w-5'></Search></Link>
                 </div>
             </nav>
 
@@ -81,7 +81,7 @@ export default function HeaderAdmin() {
 
                     <div className="flex items-center justify-between">
                         <h2 className="scroll-m-20 text-3xl font-semibold tracking-tight first:mt-0">
-                            Admin
+                            Dashboard
                         </h2>
                         <button onClick={() => setMobileMenuOpen(false)}>
                             <X className="size-6" />
@@ -91,11 +91,9 @@ export default function HeaderAdmin() {
                     <div className="mt-6 space-y-2">
 
 
-                        <Link className="block rounded-lg px-3 py-2 font-semibold" href='/admin/products' onClick={() => { setMobileMenuOpen(false) }}>{PRODUCT_OR_SERVICE}</Link>
                         <button
                             onClick={() => setMobileProductOpen((v) => !v)}
-                            className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-base font-semibold text-gray-900 dark:text-white"
-                        >
+                            className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-base font-semibold text-gray-900 dark:text-white">
                             More
                             <ChevronDown className={`size-5 ${mobileProductOpen ? 'rotate-180' : ''}`} />
                         </button>
@@ -110,7 +108,7 @@ export default function HeaderAdmin() {
                                 </a>
                             ))
                         }
-
+                        <ThemeSwitcher />
                         <Button variant="ghost" className="text-md font-bold" onClick={() => setSignOutOpen(true)}>Sign out</Button>
 
                     </div>
