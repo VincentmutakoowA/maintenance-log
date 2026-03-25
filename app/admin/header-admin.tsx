@@ -47,24 +47,8 @@ export default function HeaderAdmin() {
                 </div>
 
                 <div className="hidden lg:flex lg:gap-x-12">
-                    <Link href='/admin/products'><Button variant="ghost">{PRODUCT_OR_SERVICE}</Button></Link>
-                    <NavigationMenu>
-                        <NavigationMenuList>
-                            <NavigationMenuItem>
-                                <NavigationMenuTrigger>More</NavigationMenuTrigger>
-                                <NavigationMenuContent>
-                                    <ul className="right-50 w-40">
+                    <Link href='/'><Button variant="ghost">Home</Button></Link>
 
-                                        <ListItem href="/admin/clean" title="Clean">
-                                            Clean up temporary files
-                                        </ListItem>
-
-                                    </ul>
-                                </NavigationMenuContent>
-                            </NavigationMenuItem>
-
-                        </NavigationMenuList>
-                    </NavigationMenu>
                 </div>
                 <div className="hidden lg:flex lg:flex-1 lg:justify-end">
                     {/*<Link href='/admin/search'> <Search className='w-5'></Search></Link>*/}
