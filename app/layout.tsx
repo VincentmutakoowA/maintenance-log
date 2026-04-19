@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
-import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
 import {  COMPANY_SLOGAN, SITE_TITLE } from "@/lib/config";
 import { cn } from "@/lib/utils";
+// @ts-expect-error CSS import handled by Next.js
+import "./globals.css";
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -43,16 +43,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
           <main id="main-content">
             {children}
           </main>
-        </ThemeProvider>
       </body>
     </html>
   );

@@ -2,353 +2,219 @@
 
 import { useEffect, useState, useActionState } from "react"
 import {
-    getAllFaultReportsAction,
-    addFaultReportAction,
-    updateFaultReportStatusAction,
-    deleteFaultReportAction,
-    getAllComputersAction,
+    getAllFaultReportsAction, addFaultReportAction,
+    updateFaultReportStatusAction, deleteFaultReportAction, getAllComputersAction,
 } from "../actions"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Spinner } from "@/components/ui/spinner"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
-import { AlertTriangle, Plus, Clock, CheckCircle2, Wrench, Trash2 } from "lucide-react"
+import { Plus, X, AlertTriangle, Clock, Wrench, CheckCircle2, Trash2 } from "lucide-react"
 
-const PRIORITY_COLORS: Record<string, string> = {
-    high: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-    medium: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-    low: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+const GREEN = "#008e00"; const GREEN_LIGHT = "#d7e6d3"; const YELLOW = "#e6f10f"
+
+const PRIORITY_MAP = {
+    high:   { bg: "#fee2e2", text: "#b91c1c", label: "High" },
+    medium: { bg: "#fef3c7", text: "#b45309", label: "Medium" },
+    low:    { bg: "#dbeafe", text: "#1d4ed8", label: "Low" },
+} as any
+
+const STATUS_MAP = {
+    pending:    { bg: "#fef3c7", text: "#b45309", label: "Pending",     Icon: Clock },
+    in_progress:{ bg: "#dbeafe", text: "#1d4ed8", label: "In Progress", Icon: Wrench },
+    resolved:   { bg: "#dcfce7", text: "#15803d", label: "Resolved",    Icon: CheckCircle2 },
+} as any
+
+function Badge({ type, value }: { type: "priority" | "status"; value: string }) {
+    const map = type === "priority" ? PRIORITY_MAP : STATUS_MAP
+    const m = map[value] ?? { bg: "#f3f4f6", text: "#6b7280", label: value }
+    return <span style={{ fontSize: 11, fontWeight: 600, background: m.bg, color: m.text, padding: "2px 8px", borderRadius: 999 }}>{m.label}</span>
 }
 
-const STATUS_COLORS: Record<string, string> = {
-    pending: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
-    in_progress: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-    resolved: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-}
-
-const STATUS_ICONS: Record<string, React.ReactNode> = {
-    pending: <Clock size={12} className="inline mr-1" />,
-    in_progress: <Wrench size={12} className="inline mr-1" />,
-    resolved: <CheckCircle2 size={12} className="inline mr-1" />,
-}
-
-function StatusBadge({ status }: { status: string }) {
-    const label = status === "in_progress" ? "In Progress" : status.charAt(0).toUpperCase() + status.slice(1)
+function Modal({ title, onClose, children }: any) {
     return (
-        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[status] ?? ""}`}>
-            {STATUS_ICONS[status]}
-            {label}
-        </span>
-    )
-}
-
-function PriorityBadge({ priority }: { priority: string }) {
-    return (
-        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${PRIORITY_COLORS[priority] ?? ""}`}>
-            {priority.charAt(0).toUpperCase() + priority.slice(1)}
-        </span>
-    )
-}
-
-function FaultReportCard({ report, onStatusChange, onDelete }: {
-    report: any
-    onStatusChange: (id: string, status: string) => void
-    onDelete: (id: string) => void
-}) {
-    const [updating, setUpdating] = useState(false)
-
-    const handleStatusChange = async (newStatus: string) => {
-        setUpdating(true)
-        await updateFaultReportStatusAction(report.id, newStatus)
-        onStatusChange(report.id, newStatus)
-        setUpdating(false)
-    }
-
-    return (
-        <Card className="border border-border">
-            <CardHeader className="pb-2">
-                <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                        <p className="font-mono text-sm font-semibold text-foreground truncate">
-                            {report.computers?.asset_tag ?? "Unknown Computer"}
-                        </p>
-                        {report.computers?.laboratories?.lab_name && (
-                            <p className="text-xs text-muted-foreground mt-0.5">
-                                {report.computers.laboratories.lab_name}
-                            </p>
-                        )}
-                    </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                        <PriorityBadge priority={report.priority} />
-                        <StatusBadge status={report.status} />
-                    </div>
+        <div style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgba(0,0,0,0.3)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+            <div style={{ background: "#fff", borderRadius: 14, width: "100%", maxWidth: 520, boxShadow: "0 20px 60px rgba(0,0,0,0.15)", overflow: "auto", maxHeight: "90vh" }}>
+                <div style={{ padding: "16px 20px", borderBottom: `1px solid ${GREEN_LIGHT}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontWeight: 700, fontSize: 15 }}>{title}</span>
+                    <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer" }}><X size={17} /></button>
                 </div>
-            </CardHeader>
-
-            <CardContent className="pt-0">
-                <p className="text-sm text-muted-foreground mb-3 line-clamp-3">
-                    {report.description}
-                </p>
-
-                <div className="flex items-center justify-between gap-2">
-                    <p className="text-xs text-muted-foreground">
-                        {new Date(report.created_at).toLocaleDateString("en-UG", {
-                            day: "numeric", month: "short", year: "numeric"
-                        })}
-                        {report.profiles?.full_name && (
-                            <> · {report.profiles.full_name}</>
-                        )}
-                    </p>
-
-                    <div className="flex items-center gap-1.5">
-                        {report.status !== "resolved" && (
-                            <Select
-                                value={report.status}
-                                onValueChange={handleStatusChange}
-                                disabled={updating}
-                            >
-                                <SelectTrigger className="h-7 text-xs w-32">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="pending">Pending</SelectItem>
-                                    <SelectItem value="in_progress">In Progress</SelectItem>
-                                    <SelectItem value="resolved">Resolved</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        )}
-                        <button
-                            onClick={() => onDelete(report.id)}
-                            className="text-muted-foreground hover:text-destructive transition-colors p-1"
-                            aria-label="Delete report"
-                        >
-                            <Trash2 size={14} />
-                        </button>
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
+                <div style={{ padding: 20 }}>{children}</div>
+            </div>
+        </div>
     )
 }
 
-function AddReportForm({
-    computers,
-    onClose,
-    onSaved,
-}: {
-    computers: any[]
-    onClose: () => void
-    onSaved: () => Promise<void>
-}) {
-    const initialState = { success: false, error: null }
-    const [state, formAction] = useActionState(addFaultReportAction, initialState)
+function FaultForm({ computers, onClose, onSaved }: any) {
+    const [state, formAction] = useActionState(addFaultReportAction, { success: false })
     const [computerId, setComputerId] = useState("")
     const [priority, setPriority] = useState("medium")
 
+    useEffect(() => { if ((state as any).success) { onSaved(); onClose() } }, [state])
+
     return (
-        <Card className="p-4">
-            <div className="w-full max-w-lg mx-auto">
-                <h2 className="text-lg font-semibold mb-6">Report a Fault</h2>
-
-                <form action={formAction}>
-                    <input type="hidden" name="computer_id" value={computerId} />
-                    <input type="hidden" name="priority" value={priority} />
-
-                    <div className="space-y-4 mb-6">
-                        <div>
-                            <label className="block text-sm font-medium mb-1">
-                                Computer <span className="text-red-500">*</span>
-                            </label>
-                            <Select value={computerId} onValueChange={setComputerId} required>
-                                <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Select computer" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {computers.map(c => (
-                                        <SelectItem key={c.id} value={c.id}>
-                                            {c.asset_tag}
-                                            {c.laboratories?.lab_name && ` — ${c.laboratories.lab_name}`}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Priority</label>
-                            <Select value={priority} onValueChange={setPriority}>
-                                <SelectTrigger className="w-full">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="low">Low</SelectItem>
-                                    <SelectItem value="medium">Medium</SelectItem>
-                                    <SelectItem value="high">High</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium mb-1">
-                                Description <span className="text-red-500">*</span>
-                            </label>
-                            <textarea
-                                name="description"
-                                rows={4}
-                                required
-                                placeholder="Describe the fault in detail…"
-                                className="w-full border rounded-md px-3 py-2 text-sm bg-background resize-none focus:outline-none focus:ring-2 focus:ring-ring"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="flex flex-wrap gap-3">
-                        <Button type="submit" disabled={!computerId}>
-                            Submit Report
-                        </Button>
-                        <Button variant="outline" type="button" onClick={onClose}>
-                            Cancel
-                        </Button>
-                    </div>
-
-                    {state?.success && (
-                        <div className="mt-4 p-3 bg-green-50 dark:bg-green-950 rounded border border-green-200 dark:border-green-800">
-                            <p className="text-green-700 dark:text-green-300 text-sm font-medium">
-                                Fault report submitted successfully!
-                            </p>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                className="mt-2"
-                                onClick={async () => { await onSaved(); onClose() }}
-                            >
-                                Back to reports
-                            </Button>
-                        </div>
-                    )}
-                </form>
+        <form action={formAction}>
+            <input type="hidden" name="computer_id" value={computerId} />
+            <input type="hidden" name="priority" value={priority} />
+            <div style={{ marginBottom: 14 }}>
+                <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 5 }}>Computer *</label>
+                <select value={computerId} onChange={e => setComputerId(e.target.value)} required
+                    style={{ width: "100%", border: `1px solid ${GREEN_LIGHT}`, borderRadius: 8, padding: "8px 10px", fontSize: 13.5, fontFamily: "inherit", background: "#fff" }}>
+                    <option value="">Select computer</option>
+                    {computers.map((c: any) => (
+                        <option key={c.id} value={c.id}>{c.asset_tag} — {c.laboratories?.lab_name ?? "No Lab"}</option>
+                    ))}
+                </select>
             </div>
-        </Card>
+            <div style={{ marginBottom: 14 }}>
+                <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 5 }}>Priority</label>
+                <select value={priority} onChange={e => setPriority(e.target.value)}
+                    style={{ width: "100%", border: `1px solid ${GREEN_LIGHT}`, borderRadius: 8, padding: "8px 10px", fontSize: 13.5, fontFamily: "inherit", background: "#fff" }}>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select>
+            </div>
+            <div style={{ marginBottom: 16 }}>
+                <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 5 }}>Fault Description *</label>
+                <textarea name="description" required rows={4}
+                    style={{ width: "100%", border: `1px solid ${GREEN_LIGHT}`, borderRadius: 8, padding: "8px 10px", fontSize: 13.5, fontFamily: "inherit", resize: "vertical", outline: "none" }}
+                    placeholder="Describe the fault in detail..." />
+            </div>
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+                <button type="button" onClick={onClose} style={{ padding: "8px 16px", borderRadius: 8, border: `1px solid ${GREEN_LIGHT}`, background: "#fff", cursor: "pointer", fontFamily: "inherit" }}>Cancel</button>
+                <button type="submit" style={{ padding: "8px 18px", borderRadius: 8, border: "none", background: GREEN, color: "#fff", cursor: "pointer", fontWeight: 600, fontFamily: "inherit" }}>Submit Fault</button>
+            </div>
+        </form>
     )
 }
 
-export default function FaultReportForm() {
-    const [reports, setReports] = useState<any[] | null>(null)
+export default function FaultsPage() {
+    const [faults, setFaults] = useState<any[]>([])
     const [computers, setComputers] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [showForm, setShowForm] = useState(false)
-    const [filterStatus, setFilterStatus] = useState("all")
+    const [filterStatus, setFilterStatus] = useState("")
+    const [filterPriority, setFilterPriority] = useState("")
 
-    const fetchData = async () => {
-        setLoading(true)
-        const [rpts, comps] = await Promise.all([
-            getAllFaultReportsAction(),
-            getAllComputersAction(),
-        ])
-        if (rpts) setReports(rpts)
-        if (comps) setComputers(comps)
-        setLoading(false)
+    const load = async () => {
+        const [f, c] = await Promise.all([getAllFaultReportsAction(), getAllComputersAction()])
+        setFaults(f ?? []); setComputers(c ?? []); setLoading(false)
     }
 
-    useEffect(() => { fetchData() }, [])
+    useEffect(() => { load() }, [])
 
-    const handleStatusChange = (id: string, newStatus: string) => {
-        setReports(prev => prev?.map(r => r.id === id ? { ...r, status: newStatus } : r) ?? null)
+    const handleStatusChange = async (id: string, status: string) => {
+        await updateFaultReportStatusAction(id, status)
+        setFaults(fs => fs.map(f => f.id === id ? { ...f, status } : f))
     }
 
     const handleDelete = async (id: string) => {
+        if (!confirm("Delete this fault report?")) return
         await deleteFaultReportAction(id)
-        setReports(prev => prev?.filter(r => r.id !== id) ?? null)
+        setFaults(fs => fs.filter(f => f.id !== id))
     }
 
-    const filtered = reports?.filter(r =>
-        filterStatus === "all" || r.status === filterStatus
-    ) ?? []
+    const filtered = faults.filter(f => {
+        if (filterStatus && f.status !== filterStatus) return false
+        if (filterPriority && f.priority !== filterPriority) return false
+        return true
+    })
 
-    if (showForm) {
-        return (
-            <div className="w-full max-w-6xl">
-                <AddReportForm
-                    computers={computers}
-                    onClose={() => setShowForm(false)}
-                    onSaved={fetchData}
-                />
-            </div>
-        )
+    if (loading) return <div style={{ textAlign: "center", padding: 60, color: "#6b7280" }}>Loading fault reports...</div>
+
+    const counts = {
+        pending: faults.filter(f => f.status === "pending").length,
+        in_progress: faults.filter(f => f.status === "in_progress").length,
+        resolved: faults.filter(f => f.status === "resolved").length,
     }
 
     return (
-        <div className="w-full max-w-6xl">
-            <Card>
-                {loading ? (
-                    <CardContent className="aspect-square sm:aspect-video flex items-center justify-center">
-                        <Spinner />
-                    </CardContent>
-                ) : !reports || reports.length === 0 ? (
-                    <CardContent className="aspect-square sm:aspect-video flex flex-col gap-4 items-center justify-center">
-                        <AlertTriangle size={40} className="text-muted-foreground" />
-                        <p className="text-muted-foreground">No fault reports yet.</p>
-                        <Button onClick={() => setShowForm(true)}>
-                            <Plus size={16} className="mr-2" /> Report a Fault
-                        </Button>
-                    </CardContent>
-                ) : (
-                    <div className="p-4">
-                        {/* Toolbar */}
-                        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-                            <div className="flex flex-wrap gap-2">
-                                {["all", "pending", "in_progress", "resolved"].map(s => (
-                                    <button
-                                        key={s}
-                                        onClick={() => setFilterStatus(s)}
-                                        className={`text-xs px-3 py-1.5 rounded-full font-medium transition-all border ${filterStatus === s
-                                            ? "bg-primary text-primary-foreground border-primary"
-                                            : "bg-background border-border text-muted-foreground hover:text-foreground"
-                                            }`}
-                                    >
-                                        {s === "all" ? "All" :
-                                            s === "in_progress" ? "In Progress" :
-                                                s.charAt(0).toUpperCase() + s.slice(1)}
-                                        {" "}
-                                        <span className="font-normal opacity-70">
-                                            ({s === "all" ? reports.length : reports.filter(r => r.status === s).length})
-                                        </span>
-                                    </button>
-                                ))}
-                            </div>
+        <div style={{ maxWidth: 1000 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+                <div>
+                    <div style={{ fontSize: 18, fontWeight: 700 }}>Fault Reports</div>
+                    <div style={{ fontSize: 13, color: "#6b7280" }}>{faults.length} total reports</div>
+                </div>
+                <button onClick={() => setShowForm(true)}
+                    style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", background: GREEN, color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600, fontSize: 13.5, fontFamily: "inherit" }}>
+                    <Plus size={15} /> Report Fault
+                </button>
+            </div>
 
-                            <Button onClick={() => setShowForm(true)}>
-                                <Plus size={16} className="mr-2" /> Report Fault
-                            </Button>
-                        </div>
-
-                        {/* Reports grid */}
-                        {filtered.length === 0 ? (
-                            <div className="py-12 text-center text-muted-foreground">
-                                No reports with this status.
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {filtered.map(report => (
-                                    <FaultReportCard
-                                        key={report.id}
-                                        report={report}
-                                        onStatusChange={handleStatusChange}
-                                        onDelete={handleDelete}
-                                    />
-                                ))}
-                            </div>
-                        )}
+            {/* Summary cards */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, marginBottom: 18 }}>
+                {[
+                    { label: "Pending", count: counts.pending, bg: "#fef3c7", text: "#b45309" },
+                    { label: "In Progress", count: counts.in_progress, bg: "#dbeafe", text: "#1d4ed8" },
+                    { label: "Resolved", count: counts.resolved, bg: "#dcfce7", text: "#15803d" },
+                ].map(s => (
+                    <div key={s.label} style={{ background: s.bg, borderRadius: 10, padding: "14px 16px" }}>
+                        <div style={{ fontSize: 26, fontWeight: 800, color: s.text }}>{s.count}</div>
+                        <div style={{ fontSize: 12, fontWeight: 600, color: s.text }}>{s.label}</div>
                     </div>
-                )}
-            </Card>
+                ))}
+            </div>
+
+            {/* Filters */}
+            <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
+                <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
+                    style={{ border: `1px solid ${GREEN_LIGHT}`, borderRadius: 8, padding: "7px 10px", fontSize: 13, fontFamily: "inherit", background: "#fff" }}>
+                    <option value="">All Statuses</option>
+                    <option value="pending">Pending</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="resolved">Resolved</option>
+                </select>
+                <select value={filterPriority} onChange={e => setFilterPriority(e.target.value)}
+                    style={{ border: `1px solid ${GREEN_LIGHT}`, borderRadius: 8, padding: "7px 10px", fontSize: 13, fontFamily: "inherit", background: "#fff" }}>
+                    <option value="">All Priorities</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                </select>
+            </div>
+
+            {/* Fault cards */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {filtered.length === 0 ? (
+                    <div style={{ background: "#fff", border: `1px solid ${GREEN_LIGHT}`, borderRadius: 12, padding: 40, textAlign: "center", color: "#9ca3af" }}>
+                        No fault reports found.
+                    </div>
+                ) : filtered.map(f => (
+                    <div key={f.id} style={{ background: "#fff", border: `1px solid ${f.priority === "high" && f.status !== "resolved" ? "#fca5a5" : GREEN_LIGHT}`, borderRadius: 12, padding: 16 }}>
+                        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
+                            <div style={{ flex: 1 }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
+                                    <span style={{ fontWeight: 700, fontSize: 14, fontFamily: "monospace" }}>{f.computers?.asset_tag ?? "Unknown"}</span>
+                                    <span style={{ fontSize: 12, color: "#6b7280" }}>{f.computers?.laboratories?.lab_name ?? ""}</span>
+                                    <Badge type="priority" value={f.priority} />
+                                    <Badge type="status" value={f.status} />
+                                </div>
+                                <div style={{ fontSize: 13.5, color: "#374151", marginBottom: 6 }}>{f.description}</div>
+                                <div style={{ fontSize: 11, color: "#9ca3af" }}>
+                                    Reported by {f.profiles?.full_name ?? "Unknown"} · {new Date(f.created_at).toLocaleDateString("en-UG", { day: "numeric", month: "short", year: "numeric" })}
+                                </div>
+                            </div>
+                            <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end", flexShrink: 0 }}>
+                                {f.status !== "resolved" && (
+                                    <select value={f.status} onChange={e => handleStatusChange(f.id, e.target.value)}
+                                        style={{ border: `1px solid ${GREEN_LIGHT}`, borderRadius: 7, padding: "5px 8px", fontSize: 12, fontFamily: "inherit", background: "#fff", cursor: "pointer" }}>
+                                        <option value="pending">Pending</option>
+                                        <option value="in_progress">In Progress</option>
+                                        <option value="resolved">Resolved</option>
+                                    </select>
+                                )}
+                                <button onClick={() => handleDelete(f.id)}
+                                    style={{ padding: "5px 8px", borderRadius: 6, border: "1px solid #fee2e2", background: "#fff", cursor: "pointer" }}>
+                                    <Trash2 size={13} color="#dc2626" />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {showForm && (
+                <Modal title="Report a Fault" onClose={() => setShowForm(false)}>
+                    <FaultForm computers={computers} onClose={() => setShowForm(false)} onSaved={load} />
+                </Modal>
+            )}
         </div>
     )
 }
