@@ -2,450 +2,246 @@
 
 import { useEffect, useState, useActionState } from "react"
 import {
-    getAllComputersAction,
-    getAllLaboratoriesAction,
-    addComputerAction,
-    deleteComputerAction,
-    updateComputerStatusAction,
+    getAllComputersAction, getAllLaboratoriesAction, addComputerAction, deleteComputerAction,
+    updateComputerStatusAction, getAllProcessorTypesAction, getAllRamSizesAction,
 } from "../actions"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Spinner } from "@/components/ui/spinner"
-import { Badge } from "@/components/ui/badge"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
-import { PenBox, Monitor, Plus, ChevronDown, ChevronUp } from "lucide-react"
+import { Plus, Pencil, Trash2, Monitor, X, ChevronDown } from "lucide-react"
 
-const STATUS_COLORS: Record<string, string> = {
-    working: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-    faulty: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-    under_repair: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-    retired: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
-}
+const GREEN = "#008e00"; const GREEN_LIGHT = "#d7e6d3"; const YELLOW = "#e6f10f"
 
-const STATUS_LABELS: Record<string, string> = {
-    working: "Working",
-    faulty: "Faulty",
-    under_repair: "Under Repair",
-    retired: "Retired",
-}
+const STATUS_OPTS = [
+    { value: "working",    label: "Working",    color: "#dcfce7", text: "#15803d" },
+    { value: "faulty",     label: "Faulty",     color: "#fee2e2", text: "#b91c1c" },
+    { value: "under_repair",label:"Under Repair",color:"#fef3c7", text: "#b45309" },
+    { value: "retired",    label: "Retired",    color: "#f3f4f6", text: "#6b7280" },
+]
+
+const OS_OPTS = ["Windows 10","Windows 11","Ubuntu 20.04","Ubuntu 22.04","Ubuntu 24.04","macOS","ChromeOS","Other"]
 
 function StatusBadge({ status }: { status: string }) {
+    const s = STATUS_OPTS.find(o => o.value === status) ?? STATUS_OPTS[3]
+    return <span style={{ fontSize: 11, fontWeight: 600, background: s.color, color: s.text, padding: "2px 8px", borderRadius: 999 }}>{s.label}</span>
+}
+
+function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
     return (
-        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[status] ?? STATUS_COLORS.retired}`}>
-            {STATUS_LABELS[status] ?? status}
-        </span>
+        <div style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgba(0,0,0,0.3)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+            <div style={{ background: "#fff", borderRadius: 14, width: "100%", maxWidth: 600, maxHeight: "90vh", overflow: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.15)" }}>
+                <div style={{ padding: "18px 22px", borderBottom: `1px solid ${GREEN_LIGHT}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <span style={{ fontSize: 16, fontWeight: 700 }}>{title}</span>
+                    <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}><X size={18} /></button>
+                </div>
+                <div style={{ padding: 22 }}>{children}</div>
+            </div>
+        </div>
     )
 }
 
-function ComputerForm({
-    computer,
-    laboratories,
-    onClose,
-    onSaved,
-}: {
-    computer?: any
-    laboratories: any[]
-    onClose: () => void
-    onSaved: () => Promise<void>
-}) {
-    const initialState = { success: false, error: null }
-    const [state, formAction] = useActionState(addComputerAction, initialState)
+function Select({ name, value, onChange, options, placeholder }: any) {
+    return (
+        <select name={name} value={value} onChange={e => onChange(e.target.value)}
+            style={{ width: "100%", border: `1px solid ${GREEN_LIGHT}`, borderRadius: 8, padding: "8px 10px", fontSize: 13.5, background: "#fff", fontFamily: "inherit", appearance: "auto" }}>
+            <option value="">{placeholder}</option>
+            {options.map((o: any) => (
+                <option key={o.value ?? o} value={o.value ?? o}>{o.label ?? o}</option>
+            ))}
+        </select>
+    )
+}
+
+function Input({ name, defaultValue, placeholder, type = "text", required }: any) {
+    return (
+        <input name={name} defaultValue={defaultValue} placeholder={placeholder} type={type} required={required}
+            style={{ width: "100%", border: `1px solid ${GREEN_LIGHT}`, borderRadius: 8, padding: "8px 10px", fontSize: 13.5, fontFamily: "inherit", outline: "none" }} />
+    )
+}
+
+function Label({ children }: any) {
+    return <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 4 }}>{children}</label>
+}
+
+function ComputerForm({ computer, labs, processors, ramSizes, onClose, onSaved }: any) {
+    const [state, formAction] = useActionState(addComputerAction, { success: false })
     const [labId, setLabId] = useState(computer?.lab_id ?? "")
     const [status, setStatus] = useState(computer?.status ?? "working")
+    const [processor, setProcessor] = useState(computer?.processor ?? "")
+    const [ram, setRam] = useState(computer?.ram ?? "")
+    const [os, setOs] = useState(computer?.operating_system ?? "")
+
+    useEffect(() => {
+        if ((state as any).success) { onSaved(); onClose() }
+    }, [state])
 
     return (
-        <Card className="p-4">
-            <div className="w-full max-w-2xl mx-auto">
-                <h2 className="text-lg font-semibold mb-6">
-                    {computer ? "Edit Computer" : "Add Computer"}
-                </h2>
+        <form action={formAction}>
+            <input type="hidden" name="id" value={computer?.id ?? ""} />
+            <input type="hidden" name="lab_id" value={labId} />
+            <input type="hidden" name="status" value={status} />
+            <input type="hidden" name="processor" value={processor} />
+            <input type="hidden" name="ram" value={ram} />
+            <input type="hidden" name="operating_system" value={os} />
 
-                <form action={formAction}>
-                    <input type="hidden" name="id" value={computer?.id ?? ""} />
-                    <input type="hidden" name="lab_id" value={labId} />
-                    <input type="hidden" name="status" value={status} />
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                <div><Label>Asset Tag *</Label><Input name="asset_tag" defaultValue={computer?.asset_tag} placeholder="e.g. LAB-001" required /></div>
+                <div><Label>Serial Number</Label><Input name="serial_number" defaultValue={computer?.serial_number} placeholder="e.g. SN123456" /></div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label className="block text-sm font-medium mb-1">
-                                Asset Tag <span className="text-red-500">*</span>
-                            </label>
-                            <Input
-                                name="asset_tag"
-                                defaultValue={computer?.asset_tag ?? ""}
-                                placeholder="e.g. LAB-001"
-                                required
-                            />
-                        </div>
+                <div>
+                    <Label>Laboratory</Label>
+                    <Select name="_lab_id" value={labId} onChange={setLabId} placeholder="Select lab"
+                        options={labs.map((l: any) => ({ value: l.id, label: l.lab_name }))} />
+                </div>
 
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Serial Number</label>
-                            <Input
-                                name="serial_number"
-                                defaultValue={computer?.serial_number ?? ""}
-                                placeholder="e.g. SN123456"
-                            />
-                        </div>
+                <div>
+                    <Label>Processor</Label>
+                    <Select name="_processor" value={processor} onChange={setProcessor} placeholder="Select processor"
+                        options={processors.map((p: any) => ({ value: p.name, label: p.name }))} />
+                </div>
 
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Laboratory</label>
-                            <Select value={labId} onValueChange={setLabId}>
-                                <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Select laboratory" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {laboratories.map(lab => (
-                                        <SelectItem key={lab.id} value={lab.id}>
-                                            {lab.lab_name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
+                <div>
+                    <Label>RAM</Label>
+                    <Select name="_ram" value={ram} onChange={setRam} placeholder="Select RAM"
+                        options={ramSizes.map((r: any) => ({ value: r.size, label: r.size }))} />
+                </div>
 
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Status</label>
-                            <Select value={status} onValueChange={setStatus}>
-                                <SelectTrigger className="w-full">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="working">Working</SelectItem>
-                                    <SelectItem value="faulty">Faulty</SelectItem>
-                                    <SelectItem value="under_repair">Under Repair</SelectItem>
-                                    <SelectItem value="retired">Retired</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
+                <div><Label>Storage</Label><Input name="storage" defaultValue={computer?.storage} placeholder="e.g. 256 GB SSD" /></div>
 
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Processor</label>
-                            <Input
-                                name="processor"
-                                defaultValue={computer?.processor ?? ""}
-                                placeholder="e.g. Intel Core i5-12400"
-                            />
-                        </div>
+                <div>
+                    <Label>Operating System</Label>
+                    <Select name="_os" value={os} onChange={setOs} placeholder="Select OS" options={OS_OPTS} />
+                </div>
 
-                        <div>
-                            <label className="block text-sm font-medium mb-1">RAM</label>
-                            <Input
-                                name="ram"
-                                defaultValue={computer?.ram ?? ""}
-                                placeholder="e.g. 16GB DDR4"
-                            />
-                        </div>
+                <div><Label>Purchase Date</Label><Input name="purchase_date" defaultValue={computer?.purchase_date} type="date" /></div>
 
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Storage</label>
-                            <Input
-                                name="storage"
-                                defaultValue={computer?.storage ?? ""}
-                                placeholder="e.g. 512GB SSD"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Operating System</label>
-                            <Input
-                                name="operating_system"
-                                defaultValue={computer?.operating_system ?? ""}
-                                placeholder="e.g. Windows 11 Pro"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Purchase Date</label>
-                            <Input
-                                type="date"
-                                name="purchase_date"
-                                defaultValue={computer?.purchase_date ?? ""}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="flex flex-wrap gap-3">
-                        <Button type="submit">
-                            {computer ? "Save Changes" : "Add Computer"}
-                        </Button>
-                        <Button variant="outline" type="button" onClick={onClose}>
-                            Cancel
-                        </Button>
-                        {computer && (
-                            <Button
-                                type="button"
-                                variant="destructive"
-                                onClick={async () => {
-                                    await deleteComputerAction(computer.id)
-                                    await onSaved()
-                                    onClose()
-                                }}
-                            >
-                                Delete
-                            </Button>
-                        )}
-                    </div>
-
-                    {state?.success && (
-                        <div className="mt-4 p-3 bg-green-50 dark:bg-green-950 rounded border border-green-200 dark:border-green-800">
-                            <p className="text-green-700 dark:text-green-300 text-sm font-medium">
-                                {computer ? "Computer updated successfully!" : "Computer added successfully!"}
-                            </p>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                className="mt-2"
-                                onClick={async () => {
-                                    await onSaved()
-                                    onClose()
-                                }}
-                            >
-                                Back to list
-                            </Button>
-                        </div>
-                    )}
-                </form>
+                <div>
+                    <Label>Status</Label>
+                    <Select name="_status" value={status} onChange={setStatus} placeholder="Select status"
+                        options={STATUS_OPTS.map(s => ({ value: s.value, label: s.label }))} />
+                </div>
             </div>
-        </Card>
+
+            <div style={{ display: "flex", gap: 10, marginTop: 20, justifyContent: "flex-end" }}>
+                <button type="button" onClick={onClose} style={{ padding: "8px 18px", borderRadius: 8, border: `1px solid ${GREEN_LIGHT}`, background: "#fff", cursor: "pointer", fontSize: 13.5, fontFamily: "inherit" }}>Cancel</button>
+                <button type="submit" style={{ padding: "8px 20px", borderRadius: 8, border: "none", background: GREEN, color: "#fff", cursor: "pointer", fontSize: 13.5, fontWeight: 600, fontFamily: "inherit" }}>
+                    {computer ? "Update Computer" : "Add Computer"}
+                </button>
+            </div>
+        </form>
     )
 }
 
-function ComputerRow({
-    computer,
-    onEdit,
-}: {
-    computer: any
-    onEdit: (c: any) => void
-}) {
-    const [expanded, setExpanded] = useState(false)
-
-    return (
-        <>
-            <tr className="border-b hover:bg-muted/30 transition-colors">
-                <td className="py-3 px-4 font-mono text-sm font-medium">{computer.asset_tag}</td>
-                <td className="py-3 px-4 text-sm text-muted-foreground hidden sm:table-cell">
-                    {computer.laboratories?.lab_name ?? <span className="italic text-muted-foreground/60">Unassigned</span>}
-                </td>
-                <td className="py-3 px-4 text-sm hidden md:table-cell text-muted-foreground">
-                    {computer.processor ?? "—"}
-                </td>
-                <td className="py-3 px-4 text-sm hidden lg:table-cell text-muted-foreground">
-                    {computer.ram ?? "—"}
-                </td>
-                <td className="py-3 px-4">
-                    <StatusBadge status={computer.status} />
-                </td>
-                <td className="py-3 px-4">
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => onEdit(computer)}
-                            className="text-muted-foreground hover:text-foreground transition-colors"
-                            aria-label="Edit computer"
-                        >
-                            <PenBox size={16} />
-                        </button>
-                        <button
-                            onClick={() => setExpanded(v => !v)}
-                            className="text-muted-foreground hover:text-foreground transition-colors md:hidden"
-                            aria-label="Toggle details"
-                        >
-                            {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                        </button>
-                    </div>
-                </td>
-            </tr>
-            {expanded && (
-                <tr className="bg-muted/20 border-b md:hidden">
-                    <td colSpan={6} className="px-4 py-3">
-                        <dl className="grid grid-cols-2 gap-2 text-sm">
-                            <div>
-                                <dt className="text-muted-foreground font-medium">Lab</dt>
-                                <dd>{computer.laboratories?.lab_name ?? "—"}</dd>
-                            </div>
-                            <div>
-                                <dt className="text-muted-foreground font-medium">Processor</dt>
-                                <dd>{computer.processor ?? "—"}</dd>
-                            </div>
-                            <div>
-                                <dt className="text-muted-foreground font-medium">RAM</dt>
-                                <dd>{computer.ram ?? "—"}</dd>
-                            </div>
-                            <div>
-                                <dt className="text-muted-foreground font-medium">Storage</dt>
-                                <dd>{computer.storage ?? "—"}</dd>
-                            </div>
-                            <div>
-                                <dt className="text-muted-foreground font-medium">OS</dt>
-                                <dd>{computer.operating_system ?? "—"}</dd>
-                            </div>
-                            <div>
-                                <dt className="text-muted-foreground font-medium">Serial</dt>
-                                <dd className="font-mono text-xs">{computer.serial_number ?? "—"}</dd>
-                            </div>
-                        </dl>
-                    </td>
-                </tr>
-            )}
-        </>
-    )
-}
-
-export default function ComputerList() {
-    const [computers, setComputers] = useState<any[] | null>(null)
-    const [laboratories, setLaboratories] = useState<any[]>([])
+export default function ComputersPage() {
+    const [computers, setComputers] = useState<any[]>([])
+    const [labs, setLabs] = useState<any[]>([])
+    const [processors, setProcessors] = useState<any[]>([])
+    const [ramSizes, setRamSizes] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [showForm, setShowForm] = useState(false)
-    const [editingComputer, setEditingComputer] = useState<any | null>(null)
-    const [filterLab, setFilterLab] = useState("all")
-    const [filterStatus, setFilterStatus] = useState("all")
+    const [editing, setEditing] = useState<any>(null)
+    const [filterStatus, setFilterStatus] = useState("")
+    const [filterLab, setFilterLab] = useState("")
+    const [search, setSearch] = useState("")
 
-    const fetchData = async () => {
-        setLoading(true)
-        const [comps, labs] = await Promise.all([
-            getAllComputersAction(),
-            getAllLaboratoriesAction(),
+    const load = async () => {
+        const [c, l, p, r] = await Promise.all([
+            getAllComputersAction(), getAllLaboratoriesAction(), getAllProcessorTypesAction(), getAllRamSizesAction()
         ])
-        if (comps) setComputers(comps)
-        if (labs) setLaboratories(labs)
+        setComputers(c ?? []); setLabs(l ?? []); setProcessors(p ?? []); setRamSizes(r ?? [])
         setLoading(false)
     }
 
-    useEffect(() => { fetchData() }, [])
+    useEffect(() => { load() }, [])
 
-    const filtered = computers?.filter(c => {
-        const labMatch = filterLab === "all" || c.lab_id === filterLab
-        const statusMatch = filterStatus === "all" || c.status === filterStatus
-        return labMatch && statusMatch
-    }) ?? []
-
-    if (showForm) {
-        return (
-            <div className="w-full max-w-6xl">
-                <ComputerForm
-                    computer={editingComputer}
-                    laboratories={laboratories}
-                    onClose={() => { setShowForm(false); setEditingComputer(null) }}
-                    onSaved={fetchData}
-                />
-            </div>
-        )
+    const handleDelete = async (id: string) => {
+        if (!confirm("Delete this computer? This cannot be undone.")) return
+        await deleteComputerAction(id)
+        setComputers(cs => cs.filter(c => c.id !== id))
     }
 
+    const filtered = computers.filter(c => {
+        if (filterStatus && c.status !== filterStatus) return false
+        if (filterLab && c.lab_id !== filterLab) return false
+        if (search && !c.asset_tag.toLowerCase().includes(search.toLowerCase()) &&
+            !(c.serial_number ?? "").toLowerCase().includes(search.toLowerCase())) return false
+        return true
+    })
+
+    if (loading) return <div style={{ textAlign: "center", padding: 60, color: "#6b7280" }}>Loading computers...</div>
+
     return (
-        <div className="w-full max-w-6xl">
-            <Card>
-                {loading ? (
-                    <CardContent className="aspect-square sm:aspect-video flex items-center justify-center">
-                        <Spinner />
-                    </CardContent>
-                ) : !computers || computers.length === 0 ? (
-                    <CardContent className="aspect-square sm:aspect-video flex flex-col gap-4 items-center justify-center">
-                        <Monitor size={40} className="text-muted-foreground" />
-                        <p className="text-muted-foreground">No computers registered yet.</p>
-                        <Button onClick={() => setShowForm(true)}>
-                            <Plus size={16} className="mr-2" /> Add Computer
-                        </Button>
-                    </CardContent>
-                ) : (
-                    <div className="p-4">
-                        {/* Toolbar */}
-                        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-                            <div className="flex flex-wrap gap-2">
-                                <Select value={filterLab} onValueChange={setFilterLab}>
-                                    <SelectTrigger className="w-44">
-                                        <SelectValue placeholder="All Laboratories" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All Laboratories</SelectItem>
-                                        {laboratories.map(lab => (
-                                            <SelectItem key={lab.id} value={lab.id}>{lab.lab_name}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+        <div style={{ maxWidth: 1100 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+                <div>
+                    <div style={{ fontSize: 18, fontWeight: 700 }}>Computer Inventory</div>
+                    <div style={{ fontSize: 13, color: "#6b7280" }}>{computers.length} device{computers.length !== 1 ? "s" : ""} registered</div>
+                </div>
+                <button onClick={() => { setEditing(null); setShowForm(true) }}
+                    style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", background: GREEN, color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600, fontSize: 13.5, fontFamily: "inherit" }}>
+                    <Plus size={15} /> Add Computer
+                </button>
+            </div>
 
-                                <Select value={filterStatus} onValueChange={setFilterStatus}>
-                                    <SelectTrigger className="w-36">
-                                        <SelectValue placeholder="All Statuses" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All Statuses</SelectItem>
-                                        <SelectItem value="working">Working</SelectItem>
-                                        <SelectItem value="faulty">Faulty</SelectItem>
-                                        <SelectItem value="under_repair">Under Repair</SelectItem>
-                                        <SelectItem value="retired">Retired</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
+            {/* Filters */}
+            <div style={{ display: "flex", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
+                <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by asset tag..."
+                    style={{ border: `1px solid ${GREEN_LIGHT}`, borderRadius: 8, padding: "7px 12px", fontSize: 13, fontFamily: "inherit", flex: 1, minWidth: 160, outline: "none" }} />
+                <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
+                    style={{ border: `1px solid ${GREEN_LIGHT}`, borderRadius: 8, padding: "7px 10px", fontSize: 13, fontFamily: "inherit", background: "#fff" }}>
+                    <option value="">All Statuses</option>
+                    {STATUS_OPTS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                </select>
+                <select value={filterLab} onChange={e => setFilterLab(e.target.value)}
+                    style={{ border: `1px solid ${GREEN_LIGHT}`, borderRadius: 8, padding: "7px 10px", fontSize: 13, fontFamily: "inherit", background: "#fff" }}>
+                    <option value="">All Labs</option>
+                    {labs.map(l => <option key={l.id} value={l.id}>{l.lab_name}</option>)}
+                </select>
+            </div>
 
-                            <div className="flex items-center gap-3">
-                                <span className="text-sm text-muted-foreground">
-                                    {filtered.length} computer{filtered.length !== 1 ? "s" : ""}
-                                </span>
-                                <Button onClick={() => { setEditingComputer(null); setShowForm(true) }}>
-                                    <Plus size={16} className="mr-2" /> Add Computer
-                                </Button>
-                            </div>
-                        </div>
+            {/* Table */}
+            <div style={{ background: "#fff", border: `1px solid ${GREEN_LIGHT}`, borderRadius: 12, overflow: "hidden" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                    <thead>
+                        <tr style={{ background: GREEN_LIGHT }}>
+                            {["Asset Tag","Laboratory","Processor","RAM","Storage","OS","Status","Actions"].map(h => (
+                                <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontWeight: 600, fontSize: 12, color: "#2d4a2d", borderBottom: `1px solid ${GREEN_LIGHT}` }}>{h}</th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {filtered.length === 0 ? (
+                            <tr><td colSpan={8} style={{ padding: 40, textAlign: "center", color: "#9ca3af" }}>No computers found.</td></tr>
+                        ) : filtered.map(c => (
+                            <tr key={c.id} style={{ borderBottom: `1px solid #f0f7ee` }}>
+                                <td style={{ padding: "9px 14px", fontWeight: 600, fontFamily: "monospace" }}>{c.asset_tag}</td>
+                                <td style={{ padding: "9px 14px", color: "#6b7280" }}>{c.laboratories?.lab_name ?? "—"}</td>
+                                <td style={{ padding: "9px 14px", color: "#374151" }}>{c.processor ?? "—"}</td>
+                                <td style={{ padding: "9px 14px", color: "#374151" }}>{c.ram ?? "—"}</td>
+                                <td style={{ padding: "9px 14px", color: "#374151" }}>{c.storage ?? "—"}</td>
+                                <td style={{ padding: "9px 14px", color: "#374151" }}>{c.operating_system ?? "—"}</td>
+                                <td style={{ padding: "9px 14px" }}><StatusBadge status={c.status} /></td>
+                                <td style={{ padding: "9px 14px" }}>
+                                    <div style={{ display: "flex", gap: 6 }}>
+                                        <button onClick={() => { setEditing(c); setShowForm(true) }}
+                                            style={{ padding: "4px 8px", borderRadius: 6, border: `1px solid ${GREEN_LIGHT}`, background: "#fff", cursor: "pointer" }}>
+                                            <Pencil size={13} color={GREEN} />
+                                        </button>
+                                        <button onClick={() => handleDelete(c.id)}
+                                            style={{ padding: "4px 8px", borderRadius: 6, border: "1px solid #fee2e2", background: "#fff", cursor: "pointer" }}>
+                                            <Trash2 size={13} color="#dc2626" />
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
 
-                        {/* Summary badges */}
-                        <div className="flex flex-wrap gap-2 mb-4">
-                            {["working", "faulty", "under_repair", "retired"].map(s => {
-                                const count = computers.filter(c => c.status === s).length
-                                if (count === 0) return null
-                                return (
-                                    <button
-                                        key={s}
-                                        onClick={() => setFilterStatus(filterStatus === s ? "all" : s)}
-                                        className={`text-xs px-2.5 py-1 rounded-full font-medium transition-opacity ${STATUS_COLORS[s]} ${filterStatus !== "all" && filterStatus !== s ? "opacity-40" : ""}`}
-                                    >
-                                        {count} {STATUS_LABELS[s]}
-                                    </button>
-                                )
-                            })}
-                        </div>
-
-                        {/* Table */}
-                        <div className="overflow-x-auto rounded border">
-                            <table className="w-full text-sm">
-                                <thead className="bg-muted/50">
-                                    <tr>
-                                        <th className="text-left py-3 px-4 font-medium text-muted-foreground">Asset Tag</th>
-                                        <th className="text-left py-3 px-4 font-medium text-muted-foreground hidden sm:table-cell">Lab</th>
-                                        <th className="text-left py-3 px-4 font-medium text-muted-foreground hidden md:table-cell">Processor</th>
-                                        <th className="text-left py-3 px-4 font-medium text-muted-foreground hidden lg:table-cell">RAM</th>
-                                        <th className="text-left py-3 px-4 font-medium text-muted-foreground">Status</th>
-                                        <th className="py-3 px-4 w-16"></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filtered.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={6} className="py-10 text-center text-muted-foreground">
-                                                No computers match the selected filters.
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        filtered.map(computer => (
-                                            <ComputerRow
-                                                key={computer.id}
-                                                computer={computer}
-                                                onEdit={(c) => { setEditingComputer(c); setShowForm(true) }}
-                                            />
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                )}
-            </Card>
+            {showForm && (
+                <Modal title={editing ? "Edit Computer" : "Add Computer"} onClose={() => setShowForm(false)}>
+                    <ComputerForm computer={editing} labs={labs} processors={processors} ramSizes={ramSizes}
+                        onClose={() => setShowForm(false)} onSaved={load} />
+                </Modal>
+            )}
         </div>
     )
 }

@@ -2,588 +2,273 @@
 
 import { useEffect, useState, useActionState } from "react"
 import {
-    getAllMaintenanceLogsAction,
-    addMaintenanceLogAction,
-    deleteMaintenanceLogAction,
-    getAllPreventiveScheduleAction,
-    addPreventiveScheduleAction,
-    updatePreventiveScheduleStatusAction,
-    deletePreventiveScheduleAction,
-    getAllComputersAction,
-    getAllFaultReportsAction,
+    getAllMaintenanceLogsAction, addMaintenanceLogAction, deleteMaintenanceLogAction,
+    getAllPreventiveScheduleAction, addPreventiveScheduleAction,
+    updatePreventiveScheduleStatusAction, deletePreventiveScheduleAction,
+    getAllComputersAction, getAllFaultReportsAction,
 } from "../actions"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Spinner } from "@/components/ui/spinner"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
-import { Wrench, CalendarClock, Plus, Trash2, CheckCircle2 } from "lucide-react"
+import { Plus, X, Wrench, CalendarClock, Trash2, CheckCircle2 } from "lucide-react"
 
-//------------------------------------------------------------------------------
-// Shared helpers
-//------------------------------------------------------------------------------
+const GREEN = "#008e00"; const GREEN_LIGHT = "#d7e6d3"
 
-const TYPE_COLORS: Record<string, string> = {
-    corrective: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200",
-    preventive: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200",
-}
-
-const SCHED_STATUS_COLORS: Record<string, string> = {
-    pending: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
-    completed: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-}
-
-function TypeBadge({ type }: { type: string }) {
+function Modal({ title, onClose, children }: any) {
     return (
-        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${TYPE_COLORS[type] ?? ""}`}>
-            {type.charAt(0).toUpperCase() + type.slice(1)}
-        </span>
-    )
-}
-
-function formatDate(dateStr: string) {
-    return new Date(dateStr).toLocaleDateString("en-UG", {
-        day: "numeric", month: "short", year: "numeric",
-    })
-}
-
-//------------------------------------------------------------------------------
-// Maintenance Log Form
-//------------------------------------------------------------------------------
-
-function MaintenanceLogForm({
-    computers,
-    faultReports,
-    onClose,
-    onSaved,
-}: {
-    computers: any[]
-    faultReports: any[]
-    onClose: () => void
-    onSaved: () => Promise<void>
-}) {
-    const initialState = { success: false, error: null }
-    const [state, formAction] = useActionState(addMaintenanceLogAction, initialState)
-    const [computerId, setComputerId] = useState("")
-    const [faultReportId, setFaultReportId] = useState("")
-    const [maintenanceType, setMaintenanceType] = useState("corrective")
-
-    const pendingFaults = faultReports.filter(r => r.status !== "resolved")
-
-    return (
-        <Card className="p-4">
-            <div className="w-full max-w-2xl mx-auto">
-                <h2 className="text-lg font-semibold mb-6">Log Maintenance Work</h2>
-
-                <form action={formAction}>
-                    <input type="hidden" name="computer_id" value={computerId} />
-                    <input type="hidden" name="fault_report_id" value={faultReportId} />
-                    <input type="hidden" name="maintenance_type" value={maintenanceType} />
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label className="block text-sm font-medium mb-1">
-                                Computer <span className="text-red-500">*</span>
-                            </label>
-                            <Select value={computerId} onValueChange={setComputerId}>
-                                <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Select computer" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {computers.map(c => (
-                                        <SelectItem key={c.id} value={c.id}>
-                                            {c.asset_tag}
-                                            {c.laboratories?.lab_name && ` — ${c.laboratories.lab_name}`}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Maintenance Type</label>
-                            <Select value={maintenanceType} onValueChange={setMaintenanceType}>
-                                <SelectTrigger className="w-full">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="corrective">Corrective</SelectItem>
-                                    <SelectItem value="preventive">Preventive</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        {maintenanceType === "corrective" && pendingFaults.length > 0 && (
-                            <div className="sm:col-span-2">
-                                <label className="block text-sm font-medium mb-1">
-                                    Linked Fault Report <span className="text-muted-foreground font-normal">(optional)</span>
-                                </label>
-                                <Select value={faultReportId} onValueChange={setFaultReportId}>
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Select fault report" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="">None</SelectItem>
-                                        {pendingFaults.map(r => (
-                                            <SelectItem key={r.id} value={r.id}>
-                                                {r.computers?.asset_tag ?? "?"} — {r.description.slice(0, 50)}…
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        )}
-
-                        <div className="sm:col-span-2">
-                            <label className="block text-sm font-medium mb-1">Problem Identified</label>
-                            <textarea
-                                name="problem_identified"
-                                rows={2}
-                                placeholder="Describe the problem found…"
-                                className="w-full border rounded-md px-3 py-2 text-sm bg-background resize-none focus:outline-none focus:ring-2 focus:ring-ring"
-                            />
-                        </div>
-
-                        <div className="sm:col-span-2">
-                            <label className="block text-sm font-medium mb-1">
-                                Action Taken <span className="text-red-500">*</span>
-                            </label>
-                            <textarea
-                                name="action_taken"
-                                rows={3}
-                                required
-                                placeholder="Describe what was done…"
-                                className="w-full border rounded-md px-3 py-2 text-sm bg-background resize-none focus:outline-none focus:ring-2 focus:ring-ring"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Parts Replaced</label>
-                            <Input
-                                name="parts_replaced"
-                                placeholder="e.g. RAM, HDD"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Cost (UGX)</label>
-                            <Input
-                                type="number"
-                                name="cost"
-                                placeholder="e.g. 50000"
-                                min="0"
-                                step="500"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Next Maintenance Date</label>
-                            <Input
-                                type="date"
-                                name="next_maintenance_date"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="flex flex-wrap gap-3">
-                        <Button type="submit" disabled={!computerId}>
-                            Save Log
-                        </Button>
-                        <Button variant="outline" type="button" onClick={onClose}>
-                            Cancel
-                        </Button>
-                    </div>
-
-                    {state?.success && (
-                        <div className="mt-4 p-3 bg-green-50 dark:bg-green-950 rounded border border-green-200 dark:border-green-800">
-                            <p className="text-green-700 dark:text-green-300 text-sm font-medium">
-                                Maintenance log saved!
-                            </p>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                className="mt-2"
-                                onClick={async () => { await onSaved(); onClose() }}
-                            >
-                                Back to logs
-                            </Button>
-                        </div>
-                    )}
-                </form>
+        <div style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgba(0,0,0,0.3)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+            <div style={{ background: "#fff", borderRadius: 14, width: "100%", maxWidth: 560, maxHeight: "90vh", overflow: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.15)" }}>
+                <div style={{ padding: "16px 20px", borderBottom: `1px solid ${GREEN_LIGHT}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontWeight: 700, fontSize: 15 }}>{title}</span>
+                    <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer" }}><X size={17} /></button>
+                </div>
+                <div style={{ padding: 20 }}>{children}</div>
             </div>
-        </Card>
+        </div>
     )
 }
 
-//------------------------------------------------------------------------------
-// Preventive Schedule Form
-//------------------------------------------------------------------------------
+function FieldLabel({ children }: any) {
+    return <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 5 }}>{children}</label>
+}
 
-function PreventiveScheduleForm({
-    computers,
-    onClose,
-    onSaved,
-}: {
-    computers: any[]
-    onClose: () => void
-    onSaved: () => Promise<void>
-}) {
-    const initialState = { success: false, error: null }
-    const [state, formAction] = useActionState(addPreventiveScheduleAction, initialState)
+function FSelect({ name, value, onChange, options, placeholder, required }: any) {
+    return (
+        <select name={name} value={value} onChange={e => onChange(e.target.value)} required={required}
+            style={{ width: "100%", border: `1px solid ${GREEN_LIGHT}`, borderRadius: 8, padding: "8px 10px", fontSize: 13.5, fontFamily: "inherit", background: "#fff" }}>
+            <option value="">{placeholder}</option>
+            {options.map((o: any) => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>
+    )
+}
+
+function LogForm({ computers, faultReports, onClose, onSaved }: any) {
+    const [state, formAction] = useActionState(addMaintenanceLogAction, { success: false })
     const [computerId, setComputerId] = useState("")
+    const [faultId, setFaultId] = useState("")
+    const [mType, setMType] = useState("corrective")
+
+    useEffect(() => { if ((state as any).success) { onSaved(); onClose() } }, [state])
+
+    const pendingFaults = faultReports.filter((r: any) => r.status !== "resolved")
 
     return (
-        <Card className="p-4">
-            <div className="w-full max-w-lg mx-auto">
-                <h2 className="text-lg font-semibold mb-6">Schedule Preventive Maintenance</h2>
-
-                <form action={formAction}>
-                    <input type="hidden" name="computer_id" value={computerId} />
-
-                    <div className="space-y-4 mb-6">
-                        <div>
-                            <label className="block text-sm font-medium mb-1">
-                                Computer <span className="text-red-500">*</span>
-                            </label>
-                            <Select value={computerId} onValueChange={setComputerId}>
-                                <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Select computer" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {computers.map(c => (
-                                        <SelectItem key={c.id} value={c.id}>
-                                            {c.asset_tag}
-                                            {c.laboratories?.lab_name && ` — ${c.laboratories.lab_name}`}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium mb-1">
-                                Scheduled Date <span className="text-red-500">*</span>
-                            </label>
-                            <Input type="date" name="scheduled_date" required />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium mb-1">
-                                Task Description <span className="text-red-500">*</span>
-                            </label>
-                            <textarea
-                                name="task_description"
-                                rows={3}
-                                required
-                                placeholder="e.g. Clean dust, update OS patches, check hardware…"
-                                className="w-full border rounded-md px-3 py-2 text-sm bg-background resize-none focus:outline-none focus:ring-2 focus:ring-ring"
-                            />
-                        </div>
+        <form action={formAction}>
+            <input type="hidden" name="computer_id" value={computerId} />
+            <input type="hidden" name="fault_report_id" value={faultId} />
+            <input type="hidden" name="maintenance_type" value={mType} />
+            <div style={{ display: "grid", gap: 12 }}>
+                <div>
+                    <FieldLabel>Computer *</FieldLabel>
+                    <FSelect value={computerId} onChange={setComputerId} required placeholder="Select computer"
+                        options={computers.map((c: any) => ({ value: c.id, label: `${c.asset_tag} — ${c.laboratories?.lab_name ?? "No Lab"}` }))} />
+                </div>
+                <div>
+                    <FieldLabel>Linked Fault Report (optional)</FieldLabel>
+                    <FSelect value={faultId} onChange={setFaultId} placeholder="Select fault (optional)"
+                        options={pendingFaults.map((r: any) => ({ value: r.id, label: `${r.computers?.asset_tag ?? "?"} — ${r.description.slice(0, 50)}` }))} />
+                </div>
+                <div>
+                    <FieldLabel>Maintenance Type</FieldLabel>
+                    <FSelect value={mType} onChange={setMType} placeholder="Select type"
+                        options={[{ value: "corrective", label: "Corrective" }, { value: "preventive", label: "Preventive" }]} />
+                </div>
+                <div>
+                    <FieldLabel>Problem Identified</FieldLabel>
+                    <textarea name="problem_identified" rows={2}
+                        style={{ width: "100%", border: `1px solid ${GREEN_LIGHT}`, borderRadius: 8, padding: "8px 10px", fontSize: 13.5, fontFamily: "inherit", resize: "vertical" }}
+                        placeholder="Describe the problem found..." />
+                </div>
+                <div>
+                    <FieldLabel>Action Taken *</FieldLabel>
+                    <textarea name="action_taken" required rows={3}
+                        style={{ width: "100%", border: `1px solid ${GREEN_LIGHT}`, borderRadius: 8, padding: "8px 10px", fontSize: 13.5, fontFamily: "inherit", resize: "vertical" }}
+                        placeholder="What was done to fix the issue..." />
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                    <div>
+                        <FieldLabel>Parts Replaced</FieldLabel>
+                        <input name="parts_replaced" style={{ width: "100%", border: `1px solid ${GREEN_LIGHT}`, borderRadius: 8, padding: "8px 10px", fontSize: 13.5, fontFamily: "inherit" }} placeholder="e.g. RAM, HDD" />
                     </div>
-
-                    <div className="flex flex-wrap gap-3">
-                        <Button type="submit" disabled={!computerId}>
-                            Schedule Task
-                        </Button>
-                        <Button variant="outline" type="button" onClick={onClose}>
-                            Cancel
-                        </Button>
+                    <div>
+                        <FieldLabel>Cost (UGX)</FieldLabel>
+                        <input name="cost" type="number" min="0" step="100"
+                            style={{ width: "100%", border: `1px solid ${GREEN_LIGHT}`, borderRadius: 8, padding: "8px 10px", fontSize: 13.5, fontFamily: "inherit" }} placeholder="0" />
                     </div>
-
-                    {state?.success && (
-                        <div className="mt-4 p-3 bg-green-50 dark:bg-green-950 rounded border border-green-200 dark:border-green-800">
-                            <p className="text-green-700 dark:text-green-300 text-sm font-medium">
-                                Scheduled successfully!
-                            </p>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                className="mt-2"
-                                onClick={async () => { await onSaved(); onClose() }}
-                            >
-                                Back to schedule
-                            </Button>
-                        </div>
-                    )}
-                </form>
+                </div>
+                <div>
+                    <FieldLabel>Next Maintenance Date</FieldLabel>
+                    <input name="next_maintenance_date" type="date"
+                        style={{ width: "100%", border: `1px solid ${GREEN_LIGHT}`, borderRadius: 8, padding: "8px 10px", fontSize: 13.5, fontFamily: "inherit" }} />
+                </div>
             </div>
-        </Card>
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 18 }}>
+                <button type="button" onClick={onClose} style={{ padding: "8px 16px", borderRadius: 8, border: `1px solid ${GREEN_LIGHT}`, background: "#fff", cursor: "pointer", fontFamily: "inherit" }}>Cancel</button>
+                <button type="submit" style={{ padding: "8px 18px", borderRadius: 8, border: "none", background: GREEN, color: "#fff", cursor: "pointer", fontWeight: 600, fontFamily: "inherit" }}>Log Maintenance</button>
+            </div>
+        </form>
     )
 }
 
-//------------------------------------------------------------------------------
-// Main Component
-//------------------------------------------------------------------------------
+function ScheduleForm({ computers, onClose, onSaved }: any) {
+    const [state, formAction] = useActionState(addPreventiveScheduleAction, { success: false })
+    const [computerId, setComputerId] = useState("")
+    useEffect(() => { if ((state as any).success) { onSaved(); onClose() } }, [state])
+    return (
+        <form action={formAction}>
+            <input type="hidden" name="computer_id" value={computerId} />
+            <div style={{ display: "grid", gap: 12 }}>
+                <div>
+                    <FieldLabel>Computer *</FieldLabel>
+                    <FSelect value={computerId} onChange={setComputerId} required placeholder="Select computer"
+                        options={computers.map((c: any) => ({ value: c.id, label: `${c.asset_tag} — ${c.laboratories?.lab_name ?? ""}` }))} />
+                </div>
+                <div>
+                    <FieldLabel>Scheduled Date *</FieldLabel>
+                    <input name="scheduled_date" type="date" required style={{ width: "100%", border: `1px solid ${GREEN_LIGHT}`, borderRadius: 8, padding: "8px 10px", fontSize: 13.5, fontFamily: "inherit" }} />
+                </div>
+                <div>
+                    <FieldLabel>Task Description *</FieldLabel>
+                    <textarea name="task_description" required rows={3}
+                        style={{ width: "100%", border: `1px solid ${GREEN_LIGHT}`, borderRadius: 8, padding: "8px 10px", fontSize: 13.5, fontFamily: "inherit", resize: "vertical" }}
+                        placeholder="Describe the preventive maintenance task..." />
+                </div>
+            </div>
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 18 }}>
+                <button type="button" onClick={onClose} style={{ padding: "8px 16px", borderRadius: 8, border: `1px solid ${GREEN_LIGHT}`, background: "#fff", cursor: "pointer", fontFamily: "inherit" }}>Cancel</button>
+                <button type="submit" style={{ padding: "8px 18px", borderRadius: 8, border: "none", background: GREEN, color: "#fff", cursor: "pointer", fontWeight: 600, fontFamily: "inherit" }}>Schedule</button>
+            </div>
+        </form>
+    )
+}
 
-type ActiveTab = "logs" | "schedule"
-type ActiveForm = "log" | "schedule" | null
+function fmt(d: string) {
+    return new Date(d).toLocaleDateString("en-UG", { day: "numeric", month: "short", year: "numeric" })
+}
 
-export default function MaintenanceFlow() {
-    const [tab, setTab] = useState<ActiveTab>("logs")
-    const [activeForm, setActiveForm] = useState<ActiveForm>(null)
-
-    const [logs, setLogs] = useState<any[] | null>(null)
-    const [schedule, setSchedule] = useState<any[] | null>(null)
+export default function MaintenancePage() {
+    const [logs, setLogs] = useState<any[]>([])
+    const [schedules, setSchedules] = useState<any[]>([])
     const [computers, setComputers] = useState<any[]>([])
     const [faultReports, setFaultReports] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
+    const [showLogForm, setShowLogForm] = useState(false)
+    const [showSchedForm, setShowSchedForm] = useState(false)
+    const [tab, setTab] = useState<"logs" | "schedule">("logs")
 
-    const fetchData = async () => {
-        setLoading(true)
+    const load = async () => {
         const [l, s, c, f] = await Promise.all([
-            getAllMaintenanceLogsAction(),
-            getAllPreventiveScheduleAction(),
-            getAllComputersAction(),
-            getAllFaultReportsAction(),
+            getAllMaintenanceLogsAction(), getAllPreventiveScheduleAction(),
+            getAllComputersAction(), getAllFaultReportsAction(),
         ])
-        if (l) setLogs(l)
-        if (s) setSchedule(s)
-        if (c) setComputers(c)
-        if (f) setFaultReports(f)
+        setLogs(l ?? []); setSchedules(s ?? []); setComputers(c ?? []); setFaultReports(f ?? [])
         setLoading(false)
     }
 
-    useEffect(() => { fetchData() }, [])
+    useEffect(() => { load() }, [])
 
-    const handleMarkDone = async (id: string) => {
-        await updatePreventiveScheduleStatusAction(id, "completed")
-        setSchedule(prev => prev?.map(s => s.id === id ? { ...s, status: "completed" } : s) ?? null)
-    }
-
-    const handleDeleteLog = async (id: string) => {
-        await deleteMaintenanceLogAction(id)
-        setLogs(prev => prev?.filter(l => l.id !== id) ?? null)
-    }
-
-    const handleDeleteSchedule = async (id: string) => {
-        await deletePreventiveScheduleAction(id)
-        setSchedule(prev => prev?.filter(s => s.id !== id) ?? null)
-    }
-
-    // Forms
-    if (activeForm === "log") {
-        return (
-            <div className="w-full max-w-6xl">
-                <MaintenanceLogForm
-                    computers={computers}
-                    faultReports={faultReports}
-                    onClose={() => setActiveForm(null)}
-                    onSaved={fetchData}
-                />
-            </div>
-        )
-    }
-
-    if (activeForm === "schedule") {
-        return (
-            <div className="w-full max-w-6xl">
-                <PreventiveScheduleForm
-                    computers={computers}
-                    onClose={() => setActiveForm(null)}
-                    onSaved={fetchData}
-                />
-            </div>
-        )
-    }
-
-    const overdue = schedule?.filter(s =>
-        s.status === "pending" && new Date(s.scheduled_date) < new Date()
-    ) ?? []
+    if (loading) return <div style={{ textAlign: "center", padding: 60, color: "#6b7280" }}>Loading maintenance data...</div>
 
     return (
-        <div className="w-full max-w-6xl space-y-4">
-            {/* Overdue alert */}
-            {overdue.length > 0 && (
-                <div className="flex items-center gap-3 px-4 py-3 bg-orange-50 dark:bg-orange-950 border border-orange-200 dark:border-orange-800 rounded-lg text-sm text-orange-800 dark:text-orange-200">
-                    <CalendarClock size={16} className="shrink-0" />
-                    <span>
-                        <strong>{overdue.length}</strong> preventive maintenance task{overdue.length !== 1 ? "s are" : " is"} overdue.
-                    </span>
+        <div style={{ maxWidth: 1050 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+                <div>
+                    <div style={{ fontSize: 18, fontWeight: 700 }}>Maintenance</div>
+                    <div style={{ fontSize: 13, color: "#6b7280" }}>{logs.length} logs · {schedules.length} scheduled tasks</div>
+                </div>
+                <div style={{ display: "flex", gap: 8 }}>
+                    <button onClick={() => setShowSchedForm(true)}
+                        style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", background: "#fff", color: GREEN, border: `1.5px solid ${GREEN}`, borderRadius: 8, cursor: "pointer", fontWeight: 600, fontSize: 13, fontFamily: "inherit" }}>
+                        <CalendarClock size={14} /> Schedule
+                    </button>
+                    <button onClick={() => setShowLogForm(true)}
+                        style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", background: GREEN, color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600, fontSize: 13, fontFamily: "inherit" }}>
+                        <Plus size={14} /> Log Maintenance
+                    </button>
+                </div>
+            </div>
+
+            {/* Tabs */}
+            <div style={{ display: "flex", gap: 0, marginBottom: 16, borderBottom: `2px solid ${GREEN_LIGHT}` }}>
+                {(["logs", "schedule"] as const).map(t => (
+                    <button key={t} onClick={() => setTab(t)}
+                        style={{ padding: "8px 20px", border: "none", background: "none", cursor: "pointer", fontSize: 13.5, fontWeight: tab === t ? 700 : 400, color: tab === t ? GREEN : "#6b7280", borderBottom: `2px solid ${tab === t ? GREEN : "transparent"}`, marginBottom: -2, fontFamily: "inherit", textTransform: "capitalize" }}>
+                        {t === "logs" ? `Maintenance Logs (${logs.length})` : `Scheduled Tasks (${schedules.length})`}
+                    </button>
+                ))}
+            </div>
+
+            {tab === "logs" ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    {logs.length === 0 ? (
+                        <div style={{ background: "#fff", border: `1px solid ${GREEN_LIGHT}`, borderRadius: 12, padding: 40, textAlign: "center", color: "#9ca3af" }}>No maintenance logs yet.</div>
+                    ) : logs.map(l => (
+                        <div key={l.id} style={{ background: "#fff", border: `1px solid ${GREEN_LIGHT}`, borderRadius: 12, padding: 16 }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6, flexWrap: "wrap" }}>
+                                        <span style={{ fontWeight: 700, fontFamily: "monospace", fontSize: 14 }}>{l.computers?.asset_tag ?? "?"}</span>
+                                        <span style={{ fontSize: 12, color: "#6b7280" }}>{l.computers?.laboratories?.lab_name ?? ""}</span>
+                                        <span style={{ fontSize: 11, fontWeight: 600, background: l.maintenance_type === "corrective" ? "#fee2e2" : "#dbeafe", color: l.maintenance_type === "corrective" ? "#b91c1c" : "#1d4ed8", padding: "2px 8px", borderRadius: 999 }}>
+                                            {l.maintenance_type}
+                                        </span>
+                                    </div>
+                                    {l.problem_identified && <div style={{ fontSize: 12.5, color: "#6b7280", marginBottom: 4 }}><b>Problem:</b> {l.problem_identified}</div>}
+                                    <div style={{ fontSize: 13, color: "#374151", marginBottom: 4 }}><b>Action:</b> {l.action_taken}</div>
+                                    {l.parts_replaced && <div style={{ fontSize: 12.5, color: "#6b7280", marginBottom: 4 }}>Parts: {l.parts_replaced}</div>}
+                                    <div style={{ display: "flex", gap: 14, fontSize: 11.5, color: "#9ca3af", flexWrap: "wrap" }}>
+                                        <span>By {l.profiles?.full_name ?? "Unknown"}</span>
+                                        <span>{fmt(l.resolved_at)}</span>
+                                        {l.cost && <span style={{ color: "#15803d", fontWeight: 600 }}>UGX {Number(l.cost).toLocaleString()}</span>}
+                                        {l.next_maintenance_date && <span>Next: {fmt(l.next_maintenance_date)}</span>}
+                                    </div>
+                                </div>
+                                <button onClick={async () => { if (confirm("Delete this log?")) { await deleteMaintenanceLogAction(l.id); setLogs(ls => ls.filter(x => x.id !== l.id)) }}}
+                                    style={{ padding: "5px 8px", borderRadius: 6, border: "1px solid #fee2e2", background: "#fff", cursor: "pointer", marginLeft: 10, flexShrink: 0 }}>
+                                    <Trash2 size={13} color="#dc2626" />
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    {schedules.length === 0 ? (
+                        <div style={{ background: "#fff", border: `1px solid ${GREEN_LIGHT}`, borderRadius: 12, padding: 40, textAlign: "center", color: "#9ca3af" }}>No scheduled tasks yet.</div>
+                    ) : schedules.map(s => {
+                        const isPast = new Date(s.scheduled_date) < new Date() && s.status === "pending"
+                        return (
+                            <div key={s.id} style={{ background: "#fff", border: `1px solid ${isPast ? "#fca5a5" : GREEN_LIGHT}`, borderRadius: 12, padding: 16 }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                    <div>
+                                        <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 4, flexWrap: "wrap" }}>
+                                            <span style={{ fontWeight: 700, fontFamily: "monospace", fontSize: 14 }}>{s.computers?.asset_tag ?? "?"}</span>
+                                            <span style={{ fontSize: 12, color: "#6b7280" }}>{s.computers?.laboratories?.lab_name ?? ""}</span>
+                                            <span style={{ fontSize: 11, fontWeight: 600, background: s.status === "completed" ? "#dcfce7" : isPast ? "#fee2e2" : "#fef3c7", color: s.status === "completed" ? "#15803d" : isPast ? "#b91c1c" : "#b45309", padding: "2px 8px", borderRadius: 999 }}>
+                                                {s.status === "completed" ? "Completed" : isPast ? "Overdue" : "Pending"}
+                                            </span>
+                                            <span style={{ fontSize: 12, color: "#374151" }}>{fmt(s.scheduled_date)}</span>
+                                        </div>
+                                        <div style={{ fontSize: 13, color: "#374151" }}>{s.task_description}</div>
+                                    </div>
+                                    <div style={{ display: "flex", gap: 6, flexShrink: 0, marginLeft: 10 }}>
+                                        {s.status !== "completed" && (
+                                            <button onClick={async () => { await updatePreventiveScheduleStatusAction(s.id, "completed"); setSchedules(sc => sc.map(x => x.id === s.id ? { ...x, status: "completed" } : x)) }}
+                                                style={{ padding: "5px 8px", borderRadius: 6, border: `1px solid ${GREEN_LIGHT}`, background: "#fff", cursor: "pointer" }}>
+                                                <CheckCircle2 size={13} color={GREEN} />
+                                            </button>
+                                        )}
+                                        <button onClick={async () => { if (confirm("Delete?")) { await deletePreventiveScheduleAction(s.id); setSchedules(sc => sc.filter(x => x.id !== s.id)) }}}
+                                            style={{ padding: "5px 8px", borderRadius: 6, border: "1px solid #fee2e2", background: "#fff", cursor: "pointer" }}>
+                                            <Trash2 size={13} color="#dc2626" />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )
+                    })}
                 </div>
             )}
 
-            {/* Tab bar */}
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-                <div className="flex border rounded-lg overflow-hidden">
-                    {(["logs", "schedule"] as ActiveTab[]).map(t => (
-                        <button
-                            key={t}
-                            onClick={() => setTab(t)}
-                            className={`px-4 py-2 text-sm font-medium transition-colors ${tab === t
-                                ? "bg-primary text-primary-foreground"
-                                : "bg-background text-muted-foreground hover:text-foreground"
-                                }`}
-                        >
-                            {t === "logs" ? "Maintenance Logs" : "Preventive Schedule"}
-                            {t === "schedule" && overdue.length > 0 && (
-                                <span className="ml-1.5 inline-flex items-center justify-center w-4 h-4 text-xs rounded-full bg-orange-500 text-white">
-                                    {overdue.length}
-                                </span>
-                            )}
-                        </button>
-                    ))}
-                </div>
-
-                <Button
-                    size="sm"
-                    onClick={() => setActiveForm(tab === "logs" ? "log" : "schedule")}
-                >
-                    <Plus size={14} className="mr-1.5" />
-                    {tab === "logs" ? "Log Work" : "Schedule Task"}
-                </Button>
-            </div>
-
-            <Card>
-                {loading ? (
-                    <CardContent className="aspect-square sm:aspect-video flex items-center justify-center">
-                        <Spinner />
-                    </CardContent>
-                ) : tab === "logs" ? (
-                    // ── Maintenance Logs ──
-                    !logs || logs.length === 0 ? (
-                        <CardContent className="aspect-square sm:aspect-video flex flex-col gap-4 items-center justify-center">
-                            <Wrench size={40} className="text-muted-foreground" />
-                            <p className="text-muted-foreground">No maintenance logs yet.</p>
-                            <Button onClick={() => setActiveForm("log")}>
-                                <Plus size={16} className="mr-2" /> Log Maintenance Work
-                            </Button>
-                        </CardContent>
-                    ) : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                                <thead className="bg-muted/50">
-                                    <tr>
-                                        <th className="text-left py-3 px-4 font-medium text-muted-foreground">Date</th>
-                                        <th className="text-left py-3 px-4 font-medium text-muted-foreground">Computer</th>
-                                        <th className="text-left py-3 px-4 font-medium text-muted-foreground hidden sm:table-cell">Type</th>
-                                        <th className="text-left py-3 px-4 font-medium text-muted-foreground hidden md:table-cell">Action Taken</th>
-                                        <th className="text-left py-3 px-4 font-medium text-muted-foreground hidden lg:table-cell">Cost</th>
-                                        <th className="py-3 px-4 w-12"></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {logs.map(log => (
-                                        <tr key={log.id} className="border-t hover:bg-muted/20 transition-colors">
-                                            <td className="py-3 px-4 text-muted-foreground whitespace-nowrap">
-                                                {formatDate(log.resolved_at)}
-                                            </td>
-                                            <td className="py-3 px-4">
-                                                <p className="font-mono font-medium text-xs">{log.computers?.asset_tag ?? "—"}</p>
-                                                {log.computers?.laboratories?.lab_name && (
-                                                    <p className="text-xs text-muted-foreground">{log.computers.laboratories.lab_name}</p>
-                                                )}
-                                            </td>
-                                            <td className="py-3 px-4 hidden sm:table-cell">
-                                                <TypeBadge type={log.maintenance_type} />
-                                            </td>
-                                            <td className="py-3 px-4 hidden md:table-cell max-w-xs">
-                                                <p className="line-clamp-2 text-muted-foreground">{log.action_taken}</p>
-                                                {log.parts_replaced && (
-                                                    <p className="text-xs text-muted-foreground mt-0.5">
-                                                        Parts: {log.parts_replaced}
-                                                    </p>
-                                                )}
-                                            </td>
-                                            <td className="py-3 px-4 hidden lg:table-cell text-muted-foreground whitespace-nowrap">
-                                                {log.cost != null ? `UGX ${log.cost.toLocaleString()}` : "—"}
-                                            </td>
-                                            <td className="py-3 px-4">
-                                                <button
-                                                    onClick={() => handleDeleteLog(log.id)}
-                                                    className="text-muted-foreground hover:text-destructive transition-colors"
-                                                    aria-label="Delete log"
-                                                >
-                                                    <Trash2 size={14} />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )
-                ) : (
-                    // ── Preventive Schedule ──
-                    !schedule || schedule.length === 0 ? (
-                        <CardContent className="aspect-square sm:aspect-video flex flex-col gap-4 items-center justify-center">
-                            <CalendarClock size={40} className="text-muted-foreground" />
-                            <p className="text-muted-foreground">No scheduled maintenance tasks.</p>
-                            <Button onClick={() => setActiveForm("schedule")}>
-                                <Plus size={16} className="mr-2" /> Schedule a Task
-                            </Button>
-                        </CardContent>
-                    ) : (
-                        <div className="p-4">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {schedule.map(task => {
-                                    const isOverdue = task.status === "pending" && new Date(task.scheduled_date) < new Date()
-                                    return (
-                                        <Card
-                                            key={task.id}
-                                            className={`border ${isOverdue ? "border-orange-300 dark:border-orange-700" : "border-border"}`}
-                                        >
-                                            <CardHeader className="pb-2">
-                                                <div className="flex items-start justify-between gap-2">
-                                                    <div>
-                                                        <p className="font-mono text-sm font-semibold">
-                                                            {task.computers?.asset_tag ?? "Unknown"}
-                                                        </p>
-                                                        {task.computers?.laboratories?.lab_name && (
-                                                            <p className="text-xs text-muted-foreground mt-0.5">
-                                                                {task.computers.laboratories.lab_name}
-                                                            </p>
-                                                        )}
-                                                    </div>
-                                                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium shrink-0 ${SCHED_STATUS_COLORS[task.status] ?? ""}`}>
-                                                        {task.status.charAt(0).toUpperCase() + task.status.slice(1)}
-                                                    </span>
-                                                </div>
-                                            </CardHeader>
-
-                                            <CardContent className="pt-0">
-                                                <p className="text-sm text-muted-foreground mb-3 line-clamp-3">
-                                                    {task.task_description}
-                                                </p>
-                                                <p className={`text-xs font-medium mb-3 ${isOverdue ? "text-orange-600 dark:text-orange-400" : "text-muted-foreground"}`}>
-                                                    <CalendarClock size={11} className="inline mr-1" />
-                                                    {isOverdue ? "Overdue · " : ""}{formatDate(task.scheduled_date)}
-                                                </p>
-
-                                                <div className="flex items-center gap-1.5">
-                                                    {task.status === "pending" && (
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            className="h-7 text-xs"
-                                                            onClick={() => handleMarkDone(task.id)}
-                                                        >
-                                                            <CheckCircle2 size={12} className="mr-1" />
-                                                            Mark Done
-                                                        </Button>
-                                                    )}
-                                                    <button
-                                                        onClick={() => handleDeleteSchedule(task.id)}
-                                                        className="text-muted-foreground hover:text-destructive transition-colors p-1 ml-auto"
-                                                        aria-label="Delete task"
-                                                    >
-                                                        <Trash2 size={14} />
-                                                    </button>
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-                                    )
-                                })}
-                            </div>
-                        </div>
-                    )
-                )}
-            </Card>
+            {showLogForm && <Modal title="Log Maintenance Work" onClose={() => setShowLogForm(false)}><LogForm computers={computers} faultReports={faultReports} onClose={() => setShowLogForm(false)} onSaved={load} /></Modal>}
+            {showSchedForm && <Modal title="Schedule Preventive Maintenance" onClose={() => setShowSchedForm(false)}><ScheduleForm computers={computers} onClose={() => setShowSchedForm(false)} onSaved={load} /></Modal>}
         </div>
     )
 }

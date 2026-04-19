@@ -2,570 +2,210 @@
 
 import { useEffect, useState, useActionState } from "react"
 import {
-    getAllLaboratoriesAction,
-    addLaboratoryAction,
-    deleteLaboratoryAction,
-    getAllComputersAction,
+    getAllLaboratoriesAction, addLaboratoryAction, deleteLaboratoryAction, getAllComputersAction,
 } from "../actions"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Spinner } from "@/components/ui/spinner"
-import {
-    FlaskConical,
-    Plus,
-    PenBox,
-    MapPin,
-    Monitor,
-    ChevronDown,
-    ChevronUp,
-    X,
-} from "lucide-react"
+import { Plus, X, Pencil, Trash2, FlaskConical, MapPin, Monitor, ChevronDown, ChevronUp } from "lucide-react"
 
-// ---------------------------------------------------------------------------
-// Types & helpers
-// ---------------------------------------------------------------------------
-
-type Lab = {
-    id: string
-    lab_name: string
-    location: string | null
-    created_at: string
-}
-
-type Computer = {
-    id: string
-    lab_id: string | null
-    asset_tag: string
-    processor: string | null
-    ram: string | null
-    storage: string | null
-    operating_system: string | null
-    status: "working" | "faulty" | "under_repair" | "retired"
-}
-
-type LabStats = {
-    total: number
-    working: number
-    faulty: number
-    under_repair: number
-    retired: number
-    computers: Computer[]
-}
-
-type LabWithStats = Lab & LabStats
+const GREEN = "#008e00"; const GREEN_LIGHT = "#d7e6d3"; const YELLOW = "#e6f10f"
 
 const STATUS_DOT: Record<string, string> = {
-    working: "bg-green-500",
-    faulty: "bg-red-500",
-    under_repair: "bg-yellow-500",
-    retired: "bg-gray-400",
+    working: "#16a34a", faulty: "#dc2626", under_repair: "#d97706", retired: "#9ca3af",
 }
 
-const STATUS_PILL: Record<string, string> = {
-    working: "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300",
-    faulty: "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300",
-    under_repair: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300",
-    retired: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
-}
-
-const STATUS_LABEL: Record<string, string> = {
-    working: "Working",
-    faulty: "Faulty",
-    under_repair: "Under Repair",
-    retired: "Retired",
-}
-
-function buildLabStats(labs: Lab[], computers: Computer[]): LabWithStats[] {
-    return labs.map(lab => {
-        const labComputers = computers.filter(c => c.lab_id === lab.id)
-        return {
-            ...lab,
-            total: labComputers.length,
-            working: labComputers.filter(c => c.status === "working").length,
-            faulty: labComputers.filter(c => c.status === "faulty").length,
-            under_repair: labComputers.filter(c => c.status === "under_repair").length,
-            retired: labComputers.filter(c => c.status === "retired").length,
-            computers: labComputers,
-        }
-    })
-}
-
-// ---------------------------------------------------------------------------
-// Lab Form (add / edit)
-// ---------------------------------------------------------------------------
-
-function LabForm({
-    lab,
-    onClose,
-    onSaved,
-}: {
-    lab?: Lab | null
-    onClose: () => void
-    onSaved: () => Promise<void>
-}) {
-    const initialState = { success: false, error: null }
-    const [state, formAction] = useActionState(addLaboratoryAction, initialState)
-
+function Modal({ title, onClose, children }: any) {
     return (
-        <Card className="p-6">
-            <div className="w-full max-w-sm mx-auto">
-                {/* Header */}
-                <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-lg font-semibold">
-                        {lab ? "Edit Laboratory" : "Add Laboratory"}
-                    </h2>
-                    <button
-                        onClick={onClose}
-                        className="text-muted-foreground hover:text-foreground transition-colors"
-                        aria-label="Close"
-                    >
-                        <X size={18} />
-                    </button>
+        <div style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgba(0,0,0,0.3)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+            <div style={{ background: "#fff", borderRadius: 14, width: "100%", maxWidth: 480, boxShadow: "0 20px 60px rgba(0,0,0,0.15)" }}>
+                <div style={{ padding: "16px 20px", borderBottom: `1px solid ${GREEN_LIGHT}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontWeight: 700, fontSize: 15 }}>{title}</span>
+                    <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer" }}><X size={17} /></button>
                 </div>
-
-                <form action={formAction} className="space-y-4">
-                    <input type="hidden" name="id" value={lab?.id ?? ""} />
-
-                    <div>
-                        <label className="block text-sm font-medium mb-1">
-                            Name <span className="text-red-500">*</span>
-                        </label>
-                        <Input
-                            name="name"
-                            defaultValue={lab?.lab_name ?? ""}
-                            placeholder="e.g. Computer Lab A"
-                            required
-                            autoFocus
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium mb-1">
-                            Location{" "}
-                            <span className="text-muted-foreground font-normal text-xs">(optional)</span>
-                        </label>
-                        <Input
-                            name="location"
-                            defaultValue={lab?.location ?? ""}
-                            placeholder="e.g. Block B, 2nd Floor"
-                        />
-                    </div>
-
-                    <div className="flex flex-wrap gap-3 pt-2">
-                        <Button type="submit">
-                            {lab ? "Save Changes" : "Add Laboratory"}
-                        </Button>
-                        <Button variant="outline" type="button" onClick={onClose}>
-                            Cancel
-                        </Button>
-                        {lab && (
-                            <Button
-                                type="button"
-                                variant="destructive"
-                                className="ml-auto"
-                                onClick={async () => {
-                                    await deleteLaboratoryAction(lab.id)
-                                    await onSaved()
-                                    onClose()
-                                }}
-                            >
-                                Delete
-                            </Button>
-                        )}
-                    </div>
-
-                    {state?.success && (
-                        <div className="mt-2 p-3 bg-green-50 dark:bg-green-950 rounded-md border border-green-200 dark:border-green-800">
-                            <p className="text-green-700 dark:text-green-300 text-sm font-medium">
-                                {lab ? "Laboratory updated!" : "Laboratory added!"}
-                            </p>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                className="mt-2"
-                                onClick={async () => {
-                                    await onSaved()
-                                    onClose()
-                                }}
-                            >
-                                Back to list
-                            </Button>
-                        </div>
-                    )}
-                </form>
-            </div>
-        </Card>
-    )
-}
-
-// ---------------------------------------------------------------------------
-// Status bar — thin segmented bar showing computer status breakdown
-// ---------------------------------------------------------------------------
-
-function StatusBar({ stats }: { stats: LabStats }) {
-    if (stats.total === 0) return null
-    const segments = [
-        { key: "working", count: stats.working },
-        { key: "faulty", count: stats.faulty },
-        { key: "under_repair", count: stats.under_repair },
-        { key: "retired", count: stats.retired },
-    ].filter(s => s.count > 0)
-
-    return (
-        <div className="flex rounded-full overflow-hidden h-1.5 gap-px mt-3">
-            {segments.map(({ key, count }) => (
-                <div
-                    key={key}
-                    title={`${count} ${STATUS_LABEL[key]}`}
-                    className={`${STATUS_DOT[key]} transition-all`}
-                    style={{ width: `${(count / stats.total) * 100}%` }}
-                />
-            ))}
-        </div>
-    )
-}
-
-// ---------------------------------------------------------------------------
-// Computer row inside an expanded lab
-// ---------------------------------------------------------------------------
-
-function ComputerRow({ computer }: { computer: Computer }) {
-    return (
-        <div className="flex items-center gap-3 py-2 px-3 rounded-md hover:bg-muted/40 transition-colors">
-            <span
-                className={`w-2 h-2 rounded-full shrink-0 ${STATUS_DOT[computer.status]}`}
-                title={STATUS_LABEL[computer.status]}
-            />
-            <span className="font-mono text-sm font-medium text-foreground shrink-0 w-24 truncate">
-                {computer.asset_tag}
-            </span>
-            <span className={`text-xs font-medium px-1.5 py-0.5 rounded shrink-0 ${STATUS_PILL[computer.status]}`}>
-                {STATUS_LABEL[computer.status]}
-            </span>
-            <div className="flex gap-3 ml-auto text-xs text-muted-foreground hidden sm:flex">
-                {computer.processor && <span>{computer.processor}</span>}
-                {computer.ram && <span>{computer.ram}</span>}
+                <div style={{ padding: 20 }}>{children}</div>
             </div>
         </div>
     )
 }
 
-// ---------------------------------------------------------------------------
-// Lab Card
-// ---------------------------------------------------------------------------
-
-function LabCard({
-    lab,
-    onEdit,
-}: {
-    lab: LabWithStats
-    onEdit: (lab: Lab) => void
-}) {
-    const [expanded, setExpanded] = useState(false)
-
-    const hasIssues = lab.faulty > 0 || lab.under_repair > 0
-
+function LabForm({ lab, onClose, onSaved }: any) {
+    const [state, formAction] = useActionState(addLaboratoryAction, { success: false })
+    useEffect(() => { if ((state as any).success) { onSaved(); onClose() } }, [state])
     return (
-        <Card
-            className={`border transition-shadow hover:shadow-md ${
-                hasIssues ? "border-orange-200 dark:border-orange-800" : "border-border"
-            }`}
-        >
-            <CardHeader className="pb-2">
-                <div className="flex items-start gap-2">
-                    {/* Icon */}
-                    <div className="mt-0.5 p-1.5 rounded-md bg-muted shrink-0">
-                        <FlaskConical size={16} className="text-muted-foreground" />
-                    </div>
-
-                    {/* Title + location */}
-                    <div className="flex-1 min-w-0">
-                        <CardTitle className="text-base font-semibold leading-tight truncate">
-                            {lab.lab_name}
-                        </CardTitle>
-                        {lab.location && (
-                            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                                <MapPin size={10} />
-                                {lab.location}
-                            </p>
-                        )}
-                    </div>
-
-                    {/* Edit button */}
-                    <button
-                        onClick={() => onEdit(lab)}
-                        className="text-muted-foreground hover:text-foreground transition-colors p-1 shrink-0"
-                        aria-label={`Edit ${lab.lab_name}`}
-                    >
-                        <PenBox size={15} />
-                    </button>
-                </div>
-            </CardHeader>
-
-            <CardContent className="pt-0">
-                {/* Stat pills */}
-                {lab.total === 0 ? (
-                    <p className="text-xs text-muted-foreground italic">No computers assigned</p>
-                ) : (
-                    <>
-                        <div className="flex flex-wrap gap-1.5">
-                            {(["working", "faulty", "under_repair", "retired"] as const).map(s => {
-                                const count = lab[s as keyof LabStats] as number
-                                if (count === 0) return null
-                                return (
-                                    <span
-                                        key={s}
-                                        className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_PILL[s]}`}
-                                    >
-                                        {count} {STATUS_LABEL[s]}
-                                    </span>
-                                )
-                            })}
-                        </div>
-                        <StatusBar stats={lab} />
-                    </>
-                )}
-
-                {/* Footer: total count + expand toggle */}
-                <div className="flex items-center justify-between mt-3">
-                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Monitor size={11} />
-                        {lab.total} computer{lab.total !== 1 ? "s" : ""}
-                    </span>
-
-                    {lab.total > 0 && (
-                        <button
-                            onClick={() => setExpanded(v => !v)}
-                            className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
-                        >
-                            {expanded ? (
-                                <>Hide <ChevronUp size={13} /></>
-                            ) : (
-                                <>View computers <ChevronDown size={13} /></>
-                            )}
-                        </button>
-                    )}
-                </div>
-
-                {/* Expanded computer list */}
-                {expanded && lab.computers.length > 0 && (
-                    <div className="mt-3 border-t pt-3 space-y-0.5">
-                        {lab.computers.map(c => (
-                            <ComputerRow key={c.id} computer={c} />
-                        ))}
-                    </div>
-                )}
-            </CardContent>
-        </Card>
+        <form action={formAction}>
+            <input type="hidden" name="id" value={lab?.id ?? ""} />
+            <div style={{ marginBottom: 14 }}>
+                <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 5 }}>Laboratory Name *</label>
+                <input name="name" defaultValue={lab?.lab_name} required
+                    style={{ width: "100%", border: `1px solid ${GREEN_LIGHT}`, borderRadius: 8, padding: "8px 10px", fontSize: 13.5, fontFamily: "inherit", outline: "none" }}
+                    placeholder="e.g. Computer Lab 1" />
+            </div>
+            <div style={{ marginBottom: 18 }}>
+                <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 5 }}>Location</label>
+                <input name="location" defaultValue={lab?.location ?? ""}
+                    style={{ width: "100%", border: `1px solid ${GREEN_LIGHT}`, borderRadius: 8, padding: "8px 10px", fontSize: 13.5, fontFamily: "inherit", outline: "none" }}
+                    placeholder="e.g. Block A, Floor 2" />
+            </div>
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+                <button type="button" onClick={onClose} style={{ padding: "8px 16px", borderRadius: 8, border: `1px solid ${GREEN_LIGHT}`, background: "#fff", cursor: "pointer", fontFamily: "inherit" }}>Cancel</button>
+                <button type="submit" style={{ padding: "8px 18px", borderRadius: 8, border: "none", background: GREEN, color: "#fff", cursor: "pointer", fontWeight: 600, fontFamily: "inherit" }}>
+                    {lab ? "Update Lab" : "Add Laboratory"}
+                </button>
+            </div>
+        </form>
     )
 }
 
-// ---------------------------------------------------------------------------
-// Unassigned computers panel
-// ---------------------------------------------------------------------------
-
-function UnassignedPanel({ computers }: { computers: Computer[] }) {
-    const [expanded, setExpanded] = useState(false)
-    if (computers.length === 0) return null
-
-    return (
-        <Card className="border-dashed border-muted-foreground/30">
-            <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <div className="p-1.5 rounded-md bg-muted">
-                            <Monitor size={16} className="text-muted-foreground" />
-                        </div>
-                        <CardTitle className="text-base font-semibold text-muted-foreground">
-                            Unassigned
-                        </CardTitle>
-                    </div>
-                    <button
-                        onClick={() => setExpanded(v => !v)}
-                        className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
-                    >
-                        {expanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
-                    </button>
-                </div>
-            </CardHeader>
-            <CardContent className="pt-0">
-                <p className="text-xs text-muted-foreground">
-                    {computers.length} computer{computers.length !== 1 ? "s" : ""} not assigned to any lab
-                </p>
-                {expanded && (
-                    <div className="mt-3 border-t pt-3 space-y-0.5">
-                        {computers.map(c => (
-                            <ComputerRow key={c.id} computer={c} />
-                        ))}
-                    </div>
-                )}
-            </CardContent>
-        </Card>
-    )
-}
-
-// ---------------------------------------------------------------------------
-// Summary bar across top
-// ---------------------------------------------------------------------------
-
-function SummaryBar({ labs, unassigned }: { labs: LabWithStats[]; unassigned: Computer[] }) {
-    const total = labs.reduce((s, l) => s + l.total, 0) + unassigned.length
-    const working = labs.reduce((s, l) => s + l.working, 0) + unassigned.filter(c => c.status === "working").length
-    const faulty = labs.reduce((s, l) => s + l.faulty, 0) + unassigned.filter(c => c.status === "faulty").length
-    const under_repair = labs.reduce((s, l) => s + l.under_repair, 0) + unassigned.filter(c => c.status === "under_repair").length
-
-    if (total === 0) return null
-
-    return (
-        <div className="flex flex-wrap gap-4 text-sm px-1">
-            <span className="text-muted-foreground">
-                <strong className="text-foreground font-semibold">{labs.length}</strong>{" "}
-                {labs.length === 1 ? "lab" : "labs"}
-            </span>
-            <span className="text-muted-foreground">
-                <strong className="text-foreground font-semibold">{total}</strong>{" "}
-                computers total
-            </span>
-            {working > 0 && (
-                <span className="flex items-center gap-1.5 text-muted-foreground">
-                    <span className="w-2 h-2 rounded-full bg-green-500 inline-block" />
-                    <strong className="text-foreground font-semibold">{working}</strong> working
-                </span>
-            )}
-            {faulty > 0 && (
-                <span className="flex items-center gap-1.5 text-muted-foreground">
-                    <span className="w-2 h-2 rounded-full bg-red-500 inline-block" />
-                    <strong className="text-foreground font-semibold">{faulty}</strong> faulty
-                </span>
-            )}
-            {under_repair > 0 && (
-                <span className="flex items-center gap-1.5 text-muted-foreground">
-                    <span className="w-2 h-2 rounded-full bg-yellow-500 inline-block" />
-                    <strong className="text-foreground font-semibold">{under_repair}</strong> under repair
-                </span>
-            )}
-        </div>
-    )
-}
-
-// ---------------------------------------------------------------------------
-// Main page
-// ---------------------------------------------------------------------------
-
-export default function Laboratories() {
-    const [labs, setLabs] = useState<LabWithStats[]>([])
-    const [unassigned, setUnassigned] = useState<Computer[]>([])
+export default function LaboratoriesPage() {
+    const [labs, setLabs] = useState<any[]>([])
+    const [computers, setComputers] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [showForm, setShowForm] = useState(false)
-    const [editingLab, setEditingLab] = useState<Lab | null>(null)
+    const [editing, setEditing] = useState<any>(null)
+    const [expanded, setExpanded] = useState<Record<string, boolean>>({})
 
-    const fetchData = async () => {
-        setLoading(true)
-        const [rawLabs, rawComputers] = await Promise.all([
-            getAllLaboratoriesAction(),
-            getAllComputersAction(),
-        ])
-
-        const labList: Lab[] = rawLabs ?? []
-        const computerList: Computer[] = (rawComputers ?? []) as Computer[]
-
-        setLabs(buildLabStats(labList, computerList))
-        setUnassigned(computerList.filter(c => !c.lab_id))
-        setLoading(false)
+    const load = async () => {
+        const [l, c] = await Promise.all([getAllLaboratoriesAction(), getAllComputersAction()])
+        setLabs(l ?? []); setComputers(c ?? []); setLoading(false)
     }
 
-    useEffect(() => { fetchData() }, [])
+    useEffect(() => { load() }, [])
 
-    const openEdit = (lab: Lab) => {
-        setEditingLab(lab)
-        setShowForm(true)
+    const handleDelete = async (id: string) => {
+        if (!confirm("Delete this laboratory? All computers in it will become unassigned.")) return
+        await deleteLaboratoryAction(id)
+        setLabs(ls => ls.filter(l => l.id !== id))
     }
 
-    const closeForm = () => {
-        setShowForm(false)
-        setEditingLab(null)
+    const getLabComputers = (labId: string) => computers.filter(c => c.lab_id === labId)
+
+    const labStats = (labId: string) => {
+        const cs = getLabComputers(labId)
+        return {
+            total: cs.length,
+            working: cs.filter(c => c.status === "working").length,
+            faulty: cs.filter(c => c.status === "faulty").length,
+            repair: cs.filter(c => c.status === "under_repair").length,
+        }
     }
 
-    // ── Form view ──────────────────────────────────────────────────────────
-    if (showForm) {
-        return (
-            <div className="w-full max-w-6xl">
-                <LabForm
-                    lab={editingLab}
-                    onClose={closeForm}
-                    onSaved={fetchData}
-                />
-            </div>
-        )
-    }
+    if (loading) return <div style={{ textAlign: "center", padding: 60, color: "#6b7280" }}>Loading laboratories...</div>
 
-    // ── Loading ────────────────────────────────────────────────────────────
-    if (loading) {
-        return (
-            <div className="w-full max-w-6xl">
-                <Card>
-                    <CardContent className="aspect-square sm:aspect-video flex items-center justify-center">
-                        <Spinner />
-                    </CardContent>
-                </Card>
-            </div>
-        )
-    }
-
-    // ── Empty state ────────────────────────────────────────────────────────
-    if (labs.length === 0) {
-        return (
-            <div className="w-full max-w-6xl">
-                <Card>
-                    <CardContent className="aspect-square sm:aspect-video flex flex-col gap-4 items-center justify-center">
-                        <div className="p-4 rounded-full bg-muted">
-                            <FlaskConical size={32} className="text-muted-foreground" />
-                        </div>
-                        <div className="text-center">
-                            <p className="font-medium">No laboratories yet</p>
-                            <p className="text-sm text-muted-foreground mt-1">
-                                Add your first lab to start tracking computers.
-                            </p>
-                        </div>
-                        <Button onClick={() => setShowForm(true)}>
-                            <Plus size={16} className="mr-2" />
-                            Add Laboratory
-                        </Button>
-                    </CardContent>
-                </Card>
-            </div>
-        )
-    }
-
-    // ── Main list ──────────────────────────────────────────────────────────
     return (
-        <div className="w-full max-w-6xl space-y-4">
-            {/* Toolbar */}
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-                <SummaryBar labs={labs} unassigned={unassigned} />
-                <Button
-                    onClick={() => { setEditingLab(null); setShowForm(true) }}
-                    className="shrink-0"
-                >
-                    <Plus size={16} className="mr-2" />
-                    Add Laboratory
-                </Button>
+        <div style={{ maxWidth: 900 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22 }}>
+                <div>
+                    <div style={{ fontSize: 18, fontWeight: 700 }}>Laboratories</div>
+                    <div style={{ fontSize: 13, color: "#6b7280" }}>{labs.length} lab{labs.length !== 1 ? "s" : ""} · {computers.length} computers total</div>
+                </div>
+                <button onClick={() => { setEditing(null); setShowForm(true) }}
+                    style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", background: GREEN, color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600, fontSize: 13.5, fontFamily: "inherit" }}>
+                    <Plus size={15} /> Add Laboratory
+                </button>
             </div>
 
-            {/* Lab cards grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {labs.map(lab => (
-                    <LabCard
-                        key={lab.id}
-                        lab={lab}
-                        onEdit={openEdit}
-                    />
-                ))}
+            {labs.length === 0 ? (
+                <div style={{ background: "#fff", border: `1px solid ${GREEN_LIGHT}`, borderRadius: 14, padding: 60, textAlign: "center", color: "#9ca3af" }}>
+                    <FlaskConical size={40} color={GREEN_LIGHT} style={{ margin: "0 auto 12px" }} />
+                    <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>No laboratories yet</div>
+                    <div style={{ fontSize: 13 }}>Add your first lab to start registering computers.</div>
+                </div>
+            ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                    {labs.map(lab => {
+                        const stats = labStats(lab.id)
+                        const isOpen = expanded[lab.id]
+                        const labComputers = getLabComputers(lab.id)
+                        return (
+                            <div key={lab.id} style={{ background: "#fff", border: `1px solid ${GREEN_LIGHT}`, borderRadius: 14, overflow: "hidden" }}>
+                                {/* Lab header */}
+                                <div style={{ padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                                    <div style={{ display: "flex", alignItems: "center", gap: 14, flex: 1 }}>
+                                        <div style={{ width: 44, height: 44, borderRadius: 10, background: GREEN_LIGHT, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                            <FlaskConical size={22} color={GREEN} />
+                                        </div>
+                                        <div>
+                                            <div style={{ fontSize: 15, fontWeight: 700 }}>{lab.lab_name}</div>
+                                            {lab.location && (
+                                                <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12.5, color: "#6b7280", marginTop: 2 }}>
+                                                    <MapPin size={12} /> {lab.location}
+                                                </div>
+                                            )}
+                                        </div>
+                                        {/* Mini stats */}
+                                        <div style={{ display: "flex", gap: 10, marginLeft: 16, flexWrap: "wrap" }}>
+                                            {[
+                                                { label: "Total", count: stats.total, color: "#374151" },
+                                                { label: "Working", count: stats.working, color: "#15803d" },
+                                                { label: "Faulty", count: stats.faulty, color: "#dc2626" },
+                                                { label: "Repair", count: stats.repair, color: "#d97706" },
+                                            ].map(s => (
+                                                <div key={s.label} style={{ textAlign: "center", minWidth: 42 }}>
+                                                    <div style={{ fontSize: 17, fontWeight: 800, color: s.color }}>{s.count}</div>
+                                                    <div style={{ fontSize: 10, color: "#9ca3af", fontWeight: 600, textTransform: "uppercase" }}>{s.label}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0, marginLeft: 10 }}>
+                                        <button onClick={() => { setEditing(lab); setShowForm(true) }}
+                                            style={{ padding: "5px 10px", borderRadius: 7, border: `1px solid ${GREEN_LIGHT}`, background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontSize: 12.5, fontFamily: "inherit", color: GREEN, fontWeight: 600 }}>
+                                            <Pencil size={12} /> Edit
+                                        </button>
+                                        <button onClick={() => handleDelete(lab.id)}
+                                            style={{ padding: "5px 10px", borderRadius: 7, border: "1px solid #fee2e2", background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontSize: 12.5, fontFamily: "inherit", color: "#dc2626", fontWeight: 600 }}>
+                                            <Trash2 size={12} /> Delete
+                                        </button>
+                                        {labComputers.length > 0 && (
+                                            <button onClick={() => setExpanded(e => ({ ...e, [lab.id]: !isOpen }))}
+                                                style={{ padding: "5px 10px", borderRadius: 7, border: `1px solid ${GREEN_LIGHT}`, background: isOpen ? GREEN_LIGHT : "#fff", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontSize: 12.5, fontFamily: "inherit", color: "#374151" }}>
+                                                <Monitor size={12} /> {labComputers.length}
+                                                {isOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
 
-                {/* Unassigned computers shown as a ghost card */}
-                <UnassignedPanel computers={unassigned} />
-            </div>
+                                {/* Expandable computer list */}
+                                {isOpen && labComputers.length > 0 && (
+                                    <div style={{ borderTop: `1px solid ${GREEN_LIGHT}`, padding: "0 0 0 0" }}>
+                                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                                            <thead>
+                                                <tr style={{ background: "#f7faf6" }}>
+                                                    {["Asset Tag", "Processor", "RAM", "Storage", "OS", "Status"].map(h => (
+                                                        <th key={h} style={{ padding: "8px 14px", textAlign: "left", fontWeight: 600, fontSize: 11.5, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.04em" }}>{h}</th>
+                                                    ))}
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {labComputers.map(c => (
+                                                    <tr key={c.id} style={{ borderTop: `1px solid #f0f7ee` }}>
+                                                        <td style={{ padding: "8px 14px", fontWeight: 700, fontFamily: "monospace", fontSize: 12.5 }}>{c.asset_tag}</td>
+                                                        <td style={{ padding: "8px 14px", color: "#374151" }}>{c.processor ?? "—"}</td>
+                                                        <td style={{ padding: "8px 14px", color: "#374151" }}>{c.ram ?? "—"}</td>
+                                                        <td style={{ padding: "8px 14px", color: "#374151" }}>{c.storage ?? "—"}</td>
+                                                        <td style={{ padding: "8px 14px", color: "#374151" }}>{c.operating_system ?? "—"}</td>
+                                                        <td style={{ padding: "8px 14px" }}>
+                                                            <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, fontWeight: 600 }}>
+                                                                <span style={{ width: 7, height: 7, borderRadius: "50%", background: STATUS_DOT[c.status] ?? "#9ca3af", display: "inline-block" }} />
+                                                                {c.status.replace("_", " ")}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+                            </div>
+                        )
+                    })}
+                </div>
+            )}
+
+            {showForm && (
+                <Modal title={editing ? "Edit Laboratory" : "Add Laboratory"} onClose={() => setShowForm(false)}>
+                    <LabForm lab={editing} onClose={() => setShowForm(false)} onSaved={load} />
+                </Modal>
+            )}
         </div>
     )
 }
