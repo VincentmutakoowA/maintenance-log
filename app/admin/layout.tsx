@@ -4,13 +4,13 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { getCurrentUserProfileAction } from "@/app/admin/actions"
+import { ProfileWithEmail } from "@/lib/types"
 import {
     LayoutDashboard, Monitor, AlertTriangle, Wrench, FlaskConical,
-    FileText, Settings, Users, LogOut, ChevronRight, Menu, X
+    FileText, Settings, Users, LogOut, ChevronRight, Menu
 } from "lucide-react"
 
 const GREEN = "#008e00"
-const GREEN_DARK = "#006800"
 const GREEN_LIGHT = "#d7e6d3"
 const YELLOW = "#e6f10f"
 
@@ -25,21 +25,17 @@ const NAV_ITEMS = [
     { href: "/admin/settings",     label: "Settings",     icon: Settings,        adminOnly: true  },
 ]
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
-    const pathname = usePathname()
-    const [profile, setProfile] = useState<any>(null)
-    const [mobileOpen, setMobileOpen] = useState(false)
+type SidebarProps = {
+    pathname: string
+    role: string
+    initials: string
+    profile: ProfileWithEmail | null
+    visibleNav: typeof NAV_ITEMS
+    onNavClick: () => void
+}
 
-    useEffect(() => { getCurrentUserProfileAction().then(setProfile) }, [])
-
-    const role = profile?.role ?? "staff"
-    const initials = profile?.full_name
-        ? profile.full_name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()
-        : "?"
-
-    const visibleNav = NAV_ITEMS.filter(n => !n.adminOnly || role === "admin")
-
-    const Sidebar = () => (
+function Sidebar({ pathname, role, initials, profile, visibleNav, onNavClick }: SidebarProps) {
+    return (
         <div style={{ width: 232, minHeight: "100vh", background: "#fff", borderRight: `1px solid ${GREEN_LIGHT}`, display: "flex", flexDirection: "column", flexShrink: 0 }}>
             <div style={{ padding: "18px 16px 14px", borderBottom: `1px solid ${GREEN_LIGHT}` }}>
                 <div style={{ background: GREEN, color: "#fff", borderRadius: 10, padding: "10px 12px", display: "flex", alignItems: "center", gap: 10 }}>
@@ -62,7 +58,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     const active = pathname === item.href || pathname.startsWith(item.href + "/")
                     const Icon = item.icon
                     return (
-                        <Link key={item.href} href={item.href} onClick={() => setMobileOpen(false)} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 14px", borderRadius: 8, fontSize: 13.5, fontWeight: active ? 600 : 400, color: active ? "#fff" : "#2d4a2d", background: active ? GREEN : "transparent", textDecoration: "none", margin: "1px 8px", transition: "all 0.12s" }}>
+                        <Link key={item.href} href={item.href} onClick={onNavClick} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 14px", borderRadius: 8, fontSize: 13.5, fontWeight: active ? 600 : 400, color: active ? "#fff" : "#2d4a2d", background: active ? GREEN : "transparent", textDecoration: "none", margin: "1px 8px", transition: "all 0.12s" }}>
                             <Icon size={16} />
                             {item.label}
                             {active && <ChevronRight size={13} style={{ marginLeft: "auto" }} />}
@@ -86,16 +82,36 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
         </div>
     )
+}
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+    const pathname = usePathname()
+    const [profile, setProfile] = useState<ProfileWithEmail | null>(null)
+    const [mobileOpen, setMobileOpen] = useState(false)
+
+    useEffect(() => { getCurrentUserProfileAction().then(setProfile) }, [])
+
+    const role = profile?.role ?? "staff"
+    const initials = profile?.full_name
+        ? profile.full_name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()
+        : "?"
+
+    const visibleNav = NAV_ITEMS.filter(n => !n.adminOnly || role === "admin")
+
+    const sidebarProps: SidebarProps = {
+        pathname, role, initials, profile, visibleNav,
+        onNavClick: () => setMobileOpen(false),
+    }
 
     const currentLabel = NAV_ITEMS.find(n => pathname.startsWith(n.href))?.label ?? "Dashboard"
 
     return (
         <div style={{ display: "flex", minHeight: "100vh", background: "#f7faf6", fontFamily: "'DM Sans', system-ui, sans-serif" }}>
             <div style={{ position: "sticky", top: 0, height: "100vh", overflow: "auto", display: "flex" }} className="hidden lg:flex">
-                <Sidebar />
+                <Sidebar {...sidebarProps} />
             </div>
             {mobileOpen && <div style={{ position: "fixed", inset: 0, zIndex: 40, background: "rgba(0,0,0,0.25)" }} onClick={() => setMobileOpen(false)} />}
-            {mobileOpen && <div style={{ position: "fixed", top: 0, left: 0, bottom: 0, zIndex: 50 }}><Sidebar /></div>}
+            {mobileOpen && <div style={{ position: "fixed", top: 0, left: 0, bottom: 0, zIndex: 50 }}><Sidebar {...sidebarProps} /></div>}
             <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
                 <div style={{ height: 4, background: `linear-gradient(90deg, ${GREEN} 55%, ${YELLOW} 100%)`, flexShrink: 0 }} />
                 <header style={{ background: "#fff", borderBottom: `1px solid ${GREEN_LIGHT}`, padding: "11px 22px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>

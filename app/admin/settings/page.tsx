@@ -1,15 +1,16 @@
 'use client'
 
-import { useEffect, useState, useActionState } from "react"
+import { useEffect, useState } from "react"
 import {
     getAllProcessorTypesAction, addProcessorTypeAction, deleteProcessorTypeAction,
     getAllRamSizesAction,
 } from "../actions"
-import { Plus, X, Trash2, Cpu, MemoryStick } from "lucide-react"
+import { Plus, Cpu, MemoryStick, X } from "lucide-react"
+import { SectionCardProps, ProcessorType, RamSize } from "@/lib/types"
 
-const GREEN = "#008e00"; const GREEN_LIGHT = "#d7e6d3"; const YELLOW = "#e6f10f"
+const GREEN = "#008e00"; const GREEN_LIGHT = "#d7e6d3";
 
-function SectionCard({ title, icon: Icon, children }: any) {
+function SectionCard({ title, icon: Icon, children }: SectionCardProps) {
     return (
         <div style={{ background: "#fff", border: `1px solid ${GREEN_LIGHT}`, borderRadius: 14, overflow: "hidden", marginBottom: 20 }}>
             <div style={{ padding: "14px 20px", borderBottom: `1px solid ${GREEN_LIGHT}`, display: "flex", alignItems: "center", gap: 10, background: "#f7faf6" }}>
@@ -22,7 +23,7 @@ function SectionCard({ title, icon: Icon, children }: any) {
 }
 
 function ProcessorManager() {
-    const [processors, setProcessors] = useState<any[]>([])
+    const [processors, setProcessors] = useState<ProcessorType[]>([])
     const [loading, setLoading] = useState(true)
     const [newName, setNewName] = useState("")
     const [adding, setAdding] = useState(false)
@@ -31,7 +32,9 @@ function ProcessorManager() {
         const p = await getAllProcessorTypesAction()
         setProcessors(p ?? []); setLoading(false)
     }
-    useEffect(() => { load() }, [])
+    useEffect(() => {
+        getAllProcessorTypesAction().then(p => { setProcessors(p ?? []); setLoading(false) })
+    }, [])
 
     const handleAdd = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -78,7 +81,7 @@ function ProcessorManager() {
 }
 
 function RamViewer() {
-    const [ramSizes, setRamSizes] = useState<any[]>([])
+    const [ramSizes, setRamSizes] = useState<RamSize[]>([])
     const [loading, setLoading] = useState(true)
     useEffect(() => { getAllRamSizesAction().then(r => { setRamSizes(r ?? []); setLoading(false) }) }, [])
     return loading ? <div style={{ color: "#9ca3af", fontSize: 13 }}>Loading...</div> : (

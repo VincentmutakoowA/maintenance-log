@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react"
 import { getDashboardStatsAction, getCurrentUserProfileAction } from "../actions"
-import { Monitor, AlertTriangle, Wrench, FlaskConical, CheckCircle2, Clock, CalendarCheck, DollarSign } from "lucide-react"
+import { Monitor, AlertTriangle, Wrench, FlaskConical, CheckCircle2, DollarSign } from "lucide-react"
+import { Profile } from "@/lib/types"
 
 const GREEN = "#008e00"
 const GREEN_LIGHT = "#d7e6d3"
@@ -43,7 +44,7 @@ function ProgressBar({ label, count, total, color }: { label: string; count: num
 
 export default function AdminHome() {
     const [stats, setStats] = useState<Stats | null>(null)
-    const [profile, setProfile] = useState<any>(null)
+    const [profile, setProfile] = useState<Profile | null>(null)
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {

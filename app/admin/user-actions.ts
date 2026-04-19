@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { createClient as createAdminClient } from "@supabase/supabase-js"
+import { ActionState, ProfileWithEmail } from "@/lib/types"
 
 // Service-role client — bypasses RLS, required for auth.admin operations
 function getAdminClient() {
@@ -21,7 +22,7 @@ async function assertAdmin() {
 }
 
 // ---------- CREATE USER ----------
-export async function createUserAction(prevState: any, formData: FormData) {
+export async function createUserAction(prevState: ActionState, formData: FormData) {
     await assertAdmin()
     const email = (formData.get("email") as string).trim().toLowerCase()
     const fullName = (formData.get("full_name") as string).trim()
@@ -76,7 +77,7 @@ export async function updateUserRoleAction(userId: string, role: string) {
 }
 
 // ---------- GET ALL USERS (with email from auth) ----------
-export async function getAllUsersAction(): Promise<any[]> {
+export async function getAllUsersAction(): Promise<ProfileWithEmail[]> {
     await assertAdmin()
     const admin = getAdminClient()
     const supabase = await createClient()

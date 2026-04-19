@@ -6,6 +6,7 @@ import {
     updateUserRoleAction, resetTempPasswordAction,
 } from "../user-actions"
 import { Plus, X, Trash2, Shield, Wrench, User, Copy, RefreshCw, KeyRound } from "lucide-react"
+import { ModalProps, ResetPasswordModalProps, ProfileWithEmail, ActionState } from "@/lib/types"
 
 const GREEN = "#008e00"; const GREEN_LIGHT = "#d7e6d3"; const YELLOW = "#e6f10f"
 
@@ -15,17 +16,7 @@ const ROLES = [
     { value: "staff",       label: "Staff",        Icon: User,   color: "#2563eb", bg: "#dbeafe" },
 ]
 
-function RoleBadge({ role }: { role: string }) {
-    const r = ROLES.find(x => x.value === role) ?? ROLES[2]
-    const Icon = r.Icon
-    return (
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, fontWeight: 600, background: r.bg, color: r.color, padding: "3px 10px", borderRadius: 999 }}>
-            <Icon size={11} /> {r.label}
-        </span>
-    )
-}
-
-function Modal({ title, onClose, children }: any) {
+function Modal({ title, onClose, children }: ModalProps) {
     return (
         <div style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgba(0,0,0,0.3)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
             <div style={{ background: "#fff", borderRadius: 14, width: "100%", maxWidth: 480, boxShadow: "0 20px 60px rgba(0,0,0,0.18)", maxHeight: "90vh", overflow: "auto" }}>
@@ -51,8 +42,8 @@ function AddUserForm({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
     const [copied, setCopied] = useState(false)
 
     useEffect(() => {
-        if ((state as any).success) { onSaved(); onClose() }
-    }, [state])
+        if ((state as ActionState).success) { onSaved(); onClose() }
+    }, [state, onSaved, onClose])
 
     const copyPw = () => {
         navigator.clipboard.writeText(tempPw)
@@ -115,9 +106,9 @@ function AddUserForm({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
                 </p>
             </div>
 
-            {(state as any).error && (
+            {(state as ActionState).error && (
                 <div style={{ background: "#fee2e2", border: "1px solid #fca5a5", borderRadius: 8, padding: "10px 14px", marginBottom: 14, fontSize: 13, color: "#b91c1c" }}>
-                    {(state as any).error}
+                    {(state as ActionState).error}
                 </div>
             )}
 
@@ -132,7 +123,7 @@ function AddUserForm({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
     )
 }
 
-function ResetPasswordModal({ user, onClose }: { user: any; onClose: () => void }) {
+function ResetPasswordModal({ user, onClose }: ResetPasswordModalProps) {
     const [tempPw, setTempPw] = useState(() => generatePassword())
     const [copied, setCopied] = useState(false)
     const [loading, setLoading] = useState(false)
@@ -144,8 +135,8 @@ function ResetPasswordModal({ user, onClose }: { user: any; onClose: () => void 
         try {
             await resetTempPasswordAction(user.id, tempPw)
             setDone(true)
-        } catch (e: any) {
-            setError(e.message)
+        } catch (e: unknown) {
+            setError(e instanceof Error ? e.message : "An unexpected error occurred")
         }
         setLoading(false)
     }
@@ -189,10 +180,10 @@ function ResetPasswordModal({ user, onClose }: { user: any; onClose: () => void 
 }
 
 export default function UsersPage() {
-    const [users, setUsers] = useState<any[]>([])
+    const [users, setUsers] = useState<ProfileWithEmail[]>([])
     const [loading, setLoading] = useState(true)
     const [showAdd, setShowAdd] = useState(false)
-    const [resetUser, setResetUser] = useState<any>(null)
+    const [resetUser, setResetUser] = useState<ProfileWithEmail | null>(null)
     const [updatingRole, setUpdatingRole] = useState<string | null>(null)
 
     const load = async () => {
@@ -200,16 +191,18 @@ export default function UsersPage() {
         const u = await getAllUsersAction()
         setUsers(u); setLoading(false)
     }
-    useEffect(() => { load() }, [])
+    useEffect(() => {
+        getAllUsersAction().then(u => { setUsers(u); setLoading(false) })
+    }, [])
 
     const handleRoleChange = async (userId: string, role: string) => {
         setUpdatingRole(userId)
         await updateUserRoleAction(userId, role)
-        setUsers(us => us.map(u => u.id === userId ? { ...u, role } : u))
+        setUsers(us => us.map(u => u.id === userId ? { ...u, role: role as ProfileWithEmail["role"] } : u))
         setUpdatingRole(null)
     }
 
-    const handleDelete = async (user: any) => {
+    const handleDelete = async (user: ProfileWithEmail) => {
         if (!confirm(`Delete ${user.full_name ?? user.email}? This permanently removes their account and cannot be undone.`)) return
         await deleteUserAction(user.id)
         setUsers(us => us.filter(u => u.id !== user.id))

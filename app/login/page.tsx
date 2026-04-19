@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation"
 import { Wrench, Eye, EyeOff, AlertCircle } from "lucide-react"
 
 const GREEN = "#008e00"
-const GREEN_DARK = "#006800"
 const GREEN_LIGHT = "#d7e6d3"
 const YELLOW = "#e6f10f"
 
@@ -38,6 +37,7 @@ export default function LoginPage() {
             background: "#f7faf6",
             display: "flex",
             fontFamily: "'DM Sans', system-ui, sans-serif",
+            
         }}>
             {/* Left panel */}
             <div style={{
