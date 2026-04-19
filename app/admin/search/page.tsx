@@ -6,11 +6,11 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { searchProducts } from './actions'
 import Link from 'next/link'
-import { TypeProductCard } from '@/lib/types'
+type SearchResult = { id: string; name: string }
 
 export default function SearchPage() {
     const [query, setQuery] = useState('')
-    const [results, setResults] = useState<TypeProductCard[]>([])
+    const [results, setResults] = useState<SearchResult[]>([])
     const [isPending, startTransition] = useTransition()
     const inputRef = useRef<HTMLInputElement>(null)
 

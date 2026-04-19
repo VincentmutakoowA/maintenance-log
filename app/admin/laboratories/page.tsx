@@ -1,18 +1,19 @@
 'use client'
 
-import { useEffect, useState, useActionState } from "react"
+import { useEffect, useState, useActionState, useCallback } from "react"
 import {
     getAllLaboratoriesAction, addLaboratoryAction, deleteLaboratoryAction, getAllComputersAction,
 } from "../actions"
 import { Plus, X, Pencil, Trash2, FlaskConical, MapPin, Monitor, ChevronDown, ChevronUp } from "lucide-react"
+import type { Laboratory, Computer, ModalProps } from "@/lib/types"
 
-const GREEN = "#008e00"; const GREEN_LIGHT = "#d7e6d3"; const YELLOW = "#e6f10f"
+const GREEN = "#008e00"; const GREEN_LIGHT = "#d7e6d3";
 
 const STATUS_DOT: Record<string, string> = {
     working: "#16a34a", faulty: "#dc2626", under_repair: "#d97706", retired: "#9ca3af",
 }
 
-function Modal({ title, onClose, children }: any) {
+function Modal({ title, onClose, children }: ModalProps) {
     return (
         <div style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgba(0,0,0,0.3)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
             <div style={{ background: "#fff", borderRadius: 14, width: "100%", maxWidth: 480, boxShadow: "0 20px 60px rgba(0,0,0,0.15)" }}>
@@ -26,9 +27,15 @@ function Modal({ title, onClose, children }: any) {
     )
 }
 
-function LabForm({ lab, onClose, onSaved }: any) {
+type LabFormProps = {
+    lab: Laboratory | null
+    onClose: () => void
+    onSaved: () => void
+}
+
+function LabForm({ lab, onClose, onSaved }: LabFormProps) {
     const [state, formAction] = useActionState(addLaboratoryAction, { success: false })
-    useEffect(() => { if ((state as any).success) { onSaved(); onClose() } }, [state])
+    useEffect(() => { if (state.success) { onSaved(); onClose() } }, [state, onClose, onSaved])
     return (
         <form action={formAction}>
             <input type="hidden" name="id" value={lab?.id ?? ""} />
@@ -55,19 +62,22 @@ function LabForm({ lab, onClose, onSaved }: any) {
 }
 
 export default function LaboratoriesPage() {
-    const [labs, setLabs] = useState<any[]>([])
-    const [computers, setComputers] = useState<any[]>([])
+    const [labs, setLabs] = useState<Laboratory[]>([])
+    const [computers, setComputers] = useState<Computer[]>([])
     const [loading, setLoading] = useState(true)
     const [showForm, setShowForm] = useState(false)
-    const [editing, setEditing] = useState<any>(null)
+    const [editing, setEditing] = useState<Laboratory | null>(null)
     const [expanded, setExpanded] = useState<Record<string, boolean>>({})
 
-    const load = async () => {
-        const [l, c] = await Promise.all([getAllLaboratoriesAction(), getAllComputersAction()])
-        setLabs(l ?? []); setComputers(c ?? []); setLoading(false)
-    }
+    const load = useCallback(() => {
+        void Promise.all([getAllLaboratoriesAction(), getAllComputersAction()]).then(([l, c]) => {
+            setLabs(l ?? [])
+            setComputers(c ?? [])
+            setLoading(false)
+        })
+    }, [])
 
-    useEffect(() => { load() }, [])
+    useEffect(() => { load() }, [load])
 
     const handleDelete = async (id: string) => {
         if (!confirm("Delete this laboratory? All computers in it will become unassigned.")) return
