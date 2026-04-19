@@ -5,21 +5,25 @@ import {
     getAllFaultReportsAction, addFaultReportAction,
     updateFaultReportStatusAction, deleteFaultReportAction, getAllComputersAction,
 } from "../actions"
-import { Plus, X, AlertTriangle, Clock, Wrench, CheckCircle2, Trash2 } from "lucide-react"
+import { Plus, X, Clock, Wrench, CheckCircle2, Trash2 } from "lucide-react"
+import {
+    ModalProps, FaultFormProps, FaultReportWithRelations, ComputerWithLab,
+    ActionState, BadgeMapEntry, StatusBadgeMapEntry,
+} from "@/lib/types"
 
-const GREEN = "#008e00"; const GREEN_LIGHT = "#d7e6d3"; const YELLOW = "#e6f10f"
+const GREEN = "#008e00"; const GREEN_LIGHT = "#d7e6d3";
 
 const PRIORITY_MAP = {
     high:   { bg: "#fee2e2", text: "#b91c1c", label: "High" },
     medium: { bg: "#fef3c7", text: "#b45309", label: "Medium" },
     low:    { bg: "#dbeafe", text: "#1d4ed8", label: "Low" },
-} as any
+} as Record<string, BadgeMapEntry>
 
 const STATUS_MAP = {
     pending:    { bg: "#fef3c7", text: "#b45309", label: "Pending",     Icon: Clock },
     in_progress:{ bg: "#dbeafe", text: "#1d4ed8", label: "In Progress", Icon: Wrench },
     resolved:   { bg: "#dcfce7", text: "#15803d", label: "Resolved",    Icon: CheckCircle2 },
-} as any
+} as Record<string, StatusBadgeMapEntry>
 
 function Badge({ type, value }: { type: "priority" | "status"; value: string }) {
     const map = type === "priority" ? PRIORITY_MAP : STATUS_MAP
@@ -27,7 +31,7 @@ function Badge({ type, value }: { type: "priority" | "status"; value: string }) 
     return <span style={{ fontSize: 11, fontWeight: 600, background: m.bg, color: m.text, padding: "2px 8px", borderRadius: 999 }}>{m.label}</span>
 }
 
-function Modal({ title, onClose, children }: any) {
+function Modal({ title, onClose, children }: ModalProps) {
     return (
         <div style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgba(0,0,0,0.3)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
             <div style={{ background: "#fff", borderRadius: 14, width: "100%", maxWidth: 520, boxShadow: "0 20px 60px rgba(0,0,0,0.15)", overflow: "auto", maxHeight: "90vh" }}>
@@ -41,12 +45,12 @@ function Modal({ title, onClose, children }: any) {
     )
 }
 
-function FaultForm({ computers, onClose, onSaved }: any) {
+function FaultForm({ computers, onClose, onSaved }: FaultFormProps) {
     const [state, formAction] = useActionState(addFaultReportAction, { success: false })
     const [computerId, setComputerId] = useState("")
     const [priority, setPriority] = useState("medium")
 
-    useEffect(() => { if ((state as any).success) { onSaved(); onClose() } }, [state])
+    useEffect(() => { if ((state as ActionState).success) { onSaved(); onClose() } }, [state, onSaved, onClose])
 
     return (
         <form action={formAction}>
@@ -57,7 +61,7 @@ function FaultForm({ computers, onClose, onSaved }: any) {
                 <select value={computerId} onChange={e => setComputerId(e.target.value)} required
                     style={{ width: "100%", border: `1px solid ${GREEN_LIGHT}`, borderRadius: 8, padding: "8px 10px", fontSize: 13.5, fontFamily: "inherit", background: "#fff" }}>
                     <option value="">Select computer</option>
-                    {computers.map((c: any) => (
+                    {computers.map((c: ComputerWithLab) => (
                         <option key={c.id} value={c.id}>{c.asset_tag} — {c.laboratories?.lab_name ?? "No Lab"}</option>
                     ))}
                 </select>
@@ -86,8 +90,8 @@ function FaultForm({ computers, onClose, onSaved }: any) {
 }
 
 export default function FaultsPage() {
-    const [faults, setFaults] = useState<any[]>([])
-    const [computers, setComputers] = useState<any[]>([])
+    const [faults, setFaults] = useState<FaultReportWithRelations[]>([])
+    const [computers, setComputers] = useState<ComputerWithLab[]>([])
     const [loading, setLoading] = useState(true)
     const [showForm, setShowForm] = useState(false)
     const [filterStatus, setFilterStatus] = useState("")
@@ -98,11 +102,15 @@ export default function FaultsPage() {
         setFaults(f ?? []); setComputers(c ?? []); setLoading(false)
     }
 
-    useEffect(() => { load() }, [])
+    useEffect(() => {
+        Promise.all([getAllFaultReportsAction(), getAllComputersAction()]).then(([f, c]) => {
+            setFaults(f ?? []); setComputers(c ?? []); setLoading(false)
+        })
+    }, [])
 
     const handleStatusChange = async (id: string, status: string) => {
         await updateFaultReportStatusAction(id, status)
-        setFaults(fs => fs.map(f => f.id === id ? { ...f, status } : f))
+        setFaults(fs => fs.map(f => f.id === id ? { ...f, status: status as FaultReportWithRelations["status"] } : f))
     }
 
     const handleDelete = async (id: string) => {

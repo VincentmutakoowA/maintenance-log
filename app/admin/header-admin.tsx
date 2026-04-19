@@ -1,27 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import { Menu, X, ChevronDown, PieChart, Search } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
 import { Button } from '../../components/ui/button'
-import { PRODUCT_OR_SERVICE } from '@/lib/config'
-import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from "@/components/ui/navigation-menu"
 import Link from 'next/link'
 import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogContent, DialogTrigger, DialogClose } from '@/components/ui/dialog'
-import { ThemeSwitcher } from '@/components/kibo-ui/theme-switcher'
 
-const products = [
-    {
-        name: 'Clean',
-        description: 'Clean up temporary files',
-        href: '/admin/clean',
-        icon: PieChart,
-    }
-]
 
 export default function HeaderAdmin() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
     const [signOutOpen, setSignOutOpen] = useState(false)
-    const [mobileProductOpen, setMobileProductOpen] = useState(false)
 
     return (
         <header className="w-full z-50">
@@ -35,9 +23,6 @@ export default function HeaderAdmin() {
                 </div>
 
                 <div className="flex lg:hidden gap-5">
-                    <Link href='/admin/search' aria-label='search'>
-                        <Search></Search>
-                    </Link>
                     <button
                         onClick={() => setMobileMenuOpen(true)}
                         className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5"
@@ -48,11 +33,6 @@ export default function HeaderAdmin() {
 
                 <div className="hidden lg:flex lg:gap-x-12">
                     <Link href='/'><Button variant="ghost">Home</Button></Link>
-
-                </div>
-                <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-                    {/*<Link href='/admin/search'> <Search className='w-5'></Search></Link>*/}
-                    <ThemeSwitcher />
                 </div>
 
                 <div className="hidden lg:flex lg:flex-1 lg:justify-end">
@@ -77,12 +57,11 @@ export default function HeaderAdmin() {
 
                         <button
                             className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-base font-semibold text-gray-900 dark:text-white">
-                                <Link href='/'>
-                                    Home
-                                </Link>
+                            <Link href='/'>
+                                Home
+                            </Link>
                         </button>
 
-                        <ThemeSwitcher />
                         <Button variant="ghost" className="text-md font-bold" onClick={() => setSignOutOpen(true)}>Sign out</Button>
 
                     </div>
@@ -115,22 +94,3 @@ export default function HeaderAdmin() {
     )
 }
 
-function ListItem({
-    title,
-    children,
-    href,
-    ...props
-}: React.ComponentPropsWithoutRef<"li"> & { href: string }) {
-    return (
-        <li {...props}>
-            <NavigationMenuLink asChild>
-                <Link href={href}>
-                    <div className="flex flex-col gap-1 text-sm">
-                        <div className="leading-none font-medium">{title}</div>
-                        <div className="text-muted-foreground line-clamp-2">{children}</div>
-                    </div>
-                </Link>
-            </NavigationMenuLink>
-        </li>
-    )
-}

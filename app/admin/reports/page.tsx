@@ -2,9 +2,13 @@
 
 import { useEffect, useState } from "react"
 import { getReportDataAction, getAllLaboratoriesAction } from "../actions"
-import { FileText, Download, Filter, Printer } from "lucide-react"
+import { Download, Filter, Printer } from "lucide-react"
+import {
+    MaintenanceLogWithRelations, FaultReportWithRelations, ComputerWithLab,
+    SummaryCardProps, Laboratory, ReportFilteredData,
+} from "@/lib/types"
 
-const GREEN = "#008e00"; const GREEN_LIGHT = "#d7e6d3"; const YELLOW = "#e6f10f"
+const GREEN = "#008e00"; const GREEN_LIGHT = "#d7e6d3";
 
 function fmt(d: string) {
     if (!d) return "—"
@@ -20,7 +24,7 @@ function downloadCSV(filename: string, rows: string[][], headers: string[]) {
     URL.revokeObjectURL(url)
 }
 
-function downloadMaintenanceCSV(logs: any[]) {
+function downloadMaintenanceCSV(logs: MaintenanceLogWithRelations[]) {
     const headers = ["Date", "Asset Tag", "Laboratory", "Technician", "Type", "Problem", "Action Taken", "Parts Replaced", "Cost (UGX)", "Next Maintenance"]
     const rows = logs.map(l => [
         fmt(l.resolved_at),
@@ -37,7 +41,7 @@ function downloadMaintenanceCSV(logs: any[]) {
     downloadCSV(`maintenance_logs_${new Date().toISOString().slice(0,10)}.csv`, rows, headers)
 }
 
-function downloadFaultsCSV(faults: any[]) {
+function downloadFaultsCSV(faults: FaultReportWithRelations[]) {
     const headers = ["Date Reported", "Asset Tag", "Laboratory", "Reported By", "Priority", "Status", "Description"]
     const rows = faults.map(f => [
         fmt(f.created_at),
@@ -51,7 +55,7 @@ function downloadFaultsCSV(faults: any[]) {
     downloadCSV(`fault_reports_${new Date().toISOString().slice(0,10)}.csv`, rows, headers)
 }
 
-function downloadInventoryCSV(computers: any[]) {
+function downloadInventoryCSV(computers: ComputerWithLab[]) {
     const headers = ["Asset Tag", "Laboratory", "Processor", "RAM", "Storage", "OS", "Status", "Purchase Date"]
     const rows = computers.map(c => [
         c.asset_tag ?? "",
@@ -66,7 +70,7 @@ function downloadInventoryCSV(computers: any[]) {
     downloadCSV(`computer_inventory_${new Date().toISOString().slice(0,10)}.csv`, rows, headers)
 }
 
-function SummaryCard({ title, value, sub, color }: any) {
+function SummaryCard({ title, value, sub, color }: SummaryCardProps) {
     return (
         <div style={{ background: "#fff", border: `1px solid ${GREEN_LIGHT}`, borderRadius: 10, padding: "14px 18px", position: "relative", overflow: "hidden" }}>
             <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: color ?? GREEN }} />
@@ -78,8 +82,8 @@ function SummaryCard({ title, value, sub, color }: any) {
 }
 
 export default function ReportsPage() {
-    const [data, setData] = useState<any>(null)
-    const [labs, setLabs] = useState<any[]>([])
+    const [data, setData] = useState<ReportFilteredData | null>(null)
+    const [labs, setLabs] = useState<Laboratory[]>([])
     const [loading, setLoading] = useState(false)
     const [from, setFrom] = useState("")
     const [to, setTo] = useState("")
@@ -94,17 +98,19 @@ export default function ReportsPage() {
         setData(d); setLoading(false)
     }
 
-    useEffect(() => { loadReport() }, [])
+    useEffect(() => {
+        getReportDataAction().then(d => { setData(d); setLoading(false) })
+    }, [])
 
     const handlePrint = () => window.print()
 
     const ml = data?.maintenanceLogs ?? []
     const fr = data?.faultReports ?? []
     const computers = data?.computers ?? []
-    const totalCost = ml.reduce((s: number, l: any) => s + (l.cost ?? 0), 0)
-    const resolvedFaults = fr.filter((f: any) => f.status === "resolved").length
-    const pendingFaults = fr.filter((f: any) => f.status === "pending").length
-    const workingComputers = computers.filter((c: any) => c.status === "working").length
+    const totalCost = ml.reduce((s: number, l: MaintenanceLogWithRelations) => s + (l.cost ?? 0), 0)
+    const resolvedFaults = fr.filter((f: FaultReportWithRelations) => f.status === "resolved").length
+    const pendingFaults = fr.filter((f: FaultReportWithRelations) => f.status === "pending").length
+    const workingComputers = computers.filter((c: ComputerWithLab) => c.status === "working").length
 
     return (
         <div style={{ maxWidth: 1100 }}>
@@ -189,19 +195,19 @@ export default function ReportsPage() {
                 <div style={{ display: "flex", gap: 8, paddingBottom: 8 }}>
                     {activeTab === "maintenance" && ml.length > 0 && (
                         <button onClick={() => downloadMaintenanceCSV(ml)}
-                            style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 13px", background: YELLOW, color: "#0f1a0f", border: "none", borderRadius: 7, cursor: "pointer", fontWeight: 600, fontSize: 12.5, fontFamily: "inherit" }}>
+                            style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 13px", background: "#e6f10f", color: "#0f1a0f", border: "none", borderRadius: 7, cursor: "pointer", fontWeight: 600, fontSize: 12.5, fontFamily: "inherit" }}>
                             <Download size={13} /> Download CSV
                         </button>
                     )}
                     {activeTab === "faults" && fr.length > 0 && (
                         <button onClick={() => downloadFaultsCSV(fr)}
-                            style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 13px", background: YELLOW, color: "#0f1a0f", border: "none", borderRadius: 7, cursor: "pointer", fontWeight: 600, fontSize: 12.5, fontFamily: "inherit" }}>
+                            style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 13px", background: "#e6f10f", color: "#0f1a0f", border: "none", borderRadius: 7, cursor: "pointer", fontWeight: 600, fontSize: 12.5, fontFamily: "inherit" }}>
                             <Download size={13} /> Download CSV
                         </button>
                     )}
                     {activeTab === "inventory" && computers.length > 0 && (
                         <button onClick={() => downloadInventoryCSV(computers)}
-                            style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 13px", background: YELLOW, color: "#0f1a0f", border: "none", borderRadius: 7, cursor: "pointer", fontWeight: 600, fontSize: 12.5, fontFamily: "inherit" }}>
+                            style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 13px", background: "#e6f10f", color: "#0f1a0f", border: "none", borderRadius: 7, cursor: "pointer", fontWeight: 600, fontSize: 12.5, fontFamily: "inherit" }}>
                             <Download size={13} /> Download CSV
                         </button>
                     )}
@@ -226,7 +232,7 @@ export default function ReportsPage() {
                                 <tbody>
                                     {ml.length === 0 ? (
                                         <tr><td colSpan={8} style={{ padding: 32, textAlign: "center", color: "#9ca3af" }}>No maintenance logs in this period.</td></tr>
-                                    ) : ml.map((l: any) => (
+                                    ) : ml.map((l: MaintenanceLogWithRelations) => (
                                         <tr key={l.id} style={{ borderBottom: "1px solid #f0f7ee" }}>
                                             <td style={{ padding: "8px 13px", whiteSpace: "nowrap" }}>{fmt(l.resolved_at)}</td>
                                             <td style={{ padding: "8px 13px", fontWeight: 700, fontFamily: "monospace", fontSize: 12 }}>{l.computers?.asset_tag ?? "—"}</td>
@@ -268,7 +274,7 @@ export default function ReportsPage() {
                             <tbody>
                                 {fr.length === 0 ? (
                                     <tr><td colSpan={7} style={{ padding: 32, textAlign: "center", color: "#9ca3af" }}>No fault reports in this period.</td></tr>
-                                ) : fr.map((f: any) => (
+                                ) : fr.map((f: FaultReportWithRelations) => (
                                     <tr key={f.id} style={{ borderBottom: "1px solid #f0f7ee" }}>
                                         <td style={{ padding: "8px 13px", whiteSpace: "nowrap" }}>{fmt(f.created_at)}</td>
                                         <td style={{ padding: "8px 13px", fontWeight: 700, fontFamily: "monospace", fontSize: 12 }}>{f.computers?.asset_tag ?? "—"}</td>
@@ -299,7 +305,7 @@ export default function ReportsPage() {
                             <tbody>
                                 {computers.length === 0 ? (
                                     <tr><td colSpan={8} style={{ padding: 32, textAlign: "center", color: "#9ca3af" }}>No computers found.</td></tr>
-                                ) : computers.map((c: any) => (
+                                ) : computers.map((c: ComputerWithLab) => (
                                     <tr key={c.id} style={{ borderBottom: "1px solid #f0f7ee" }}>
                                         <td style={{ padding: "8px 13px", fontWeight: 700, fontFamily: "monospace", fontSize: 12 }}>{c.asset_tag}</td>
                                         <td style={{ padding: "8px 13px", color: "#6b7280" }}>{c.laboratories?.lab_name ?? "—"}</td>

@@ -1,12 +1,19 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
+import {
+    ProfileWithEmail, Laboratory, ProcessorType, RamSize,
+    ComputerWithLab, FaultReportWithRelations, MaintenanceLogWithRelations,
+    PreventiveScheduleWithRelations, ActionState, DashboardStats, ReportFilteredData,
+    LaboratoryInsert, ProcessorTypeInsert, ComputerInsert, FaultReportInsert,
+    MaintenanceLogInsert,
+} from "@/lib/types"
 
 //------------------------------------------------------------------------------
 // LABORATORIES
 //------------------------------------------------------------------------------
 
-export async function getAllLaboratoriesAction(): Promise<any[] | null> {
+export async function getAllLaboratoriesAction(): Promise<Laboratory[] | null> {
     const supabase = await createClient()
     const { data, error } = await supabase
         .from("laboratories")
@@ -16,12 +23,12 @@ export async function getAllLaboratoriesAction(): Promise<any[] | null> {
     return data
 }
 
-export async function addLaboratoryAction(prevState: any, formData: FormData) {
+export async function addLaboratoryAction(prevState: ActionState, formData: FormData) {
     const id = formData.get("id") as string | null
     const labName = formData.get("name") as string
     const location = formData.get("location") as string | null
     const supabase = await createClient()
-    const payload: any = { lab_name: labName }
+    const payload: LaboratoryInsert = { lab_name: labName }
     if (location) payload.location = location
     if (id) payload.id = id
     const { error } = await supabase.from("laboratories").upsert(payload, { onConflict: "id" }).select().single()
@@ -39,18 +46,18 @@ export async function deleteLaboratoryAction(id: string) {
 // PROCESSOR TYPES
 //------------------------------------------------------------------------------
 
-export async function getAllProcessorTypesAction(): Promise<any[] | null> {
+export async function getAllProcessorTypesAction(): Promise<ProcessorType[] | null> {
     const supabase = await createClient()
     const { data, error } = await supabase.from("processor_types").select("*").order("name", { ascending: true })
     if (error) throw new Error(error.message)
     return data
 }
 
-export async function addProcessorTypeAction(prevState: any, formData: FormData) {
+export async function addProcessorTypeAction(prevState: ActionState, formData: FormData) {
     const id = formData.get("id") as string | null
     const name = formData.get("name") as string
     const supabase = await createClient()
-    const payload: any = { name }
+    const payload: ProcessorTypeInsert = { name }
     if (id) payload.id = id
     const { error } = await supabase.from("processor_types").upsert(payload, { onConflict: "id" }).select().single()
     if (error) throw new Error(error.message)
@@ -67,7 +74,7 @@ export async function deleteProcessorTypeAction(id: string) {
 // RAM SIZES
 //------------------------------------------------------------------------------
 
-export async function getAllRamSizesAction(): Promise<any[] | null> {
+export async function getAllRamSizesAction(): Promise<RamSize[] | null> {
     const supabase = await createClient()
     const { data, error } = await supabase.from("ram_sizes").select("*").order("sort_order", { ascending: true })
     if (error) throw new Error(error.message)
@@ -78,17 +85,17 @@ export async function getAllRamSizesAction(): Promise<any[] | null> {
 // COMPUTERS
 //------------------------------------------------------------------------------
 
-export async function getAllComputersAction(): Promise<any[] | null> {
+export async function getAllComputersAction(): Promise<ComputerWithLab[] | null> {
     const supabase = await createClient()
     const { data, error } = await supabase.from("computers").select(`*, laboratories(lab_name)`).order("asset_tag", { ascending: true })
     if (error) throw new Error(error.message)
     return data
 }
 
-export async function addComputerAction(prevState: any, formData: FormData) {
+export async function addComputerAction(prevState: ActionState, formData: FormData) {
     const id = formData.get("id") as string | null
     const supabase = await createClient()
-    const payload: any = {
+    const payload: ComputerInsert = {
         asset_tag: formData.get("asset_tag") as string,
         serial_number: (formData.get("serial_number") as string) || null,
         lab_id: (formData.get("lab_id") as string) || null,
@@ -121,7 +128,7 @@ export async function updateComputerStatusAction(id: string, status: string) {
 // FAULT REPORTS
 //------------------------------------------------------------------------------
 
-export async function getAllFaultReportsAction(): Promise<any[] | null> {
+export async function getAllFaultReportsAction(): Promise<FaultReportWithRelations[] | null> {
     const supabase = await createClient()
     const { data, error } = await supabase
         .from("fault_reports")
@@ -131,10 +138,10 @@ export async function getAllFaultReportsAction(): Promise<any[] | null> {
     return data
 }
 
-export async function addFaultReportAction(prevState: any, formData: FormData) {
+export async function addFaultReportAction(prevState: ActionState, formData: FormData) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    const payload: any = {
+    const payload: FaultReportInsert = {
         computer_id: formData.get("computer_id") as string,
         description: formData.get("description") as string,
         priority: (formData.get("priority") as string) || "medium",
@@ -163,7 +170,7 @@ export async function deleteFaultReportAction(id: string) {
 // MAINTENANCE LOGS
 //------------------------------------------------------------------------------
 
-export async function getAllMaintenanceLogsAction(): Promise<any[] | null> {
+export async function getAllMaintenanceLogsAction(): Promise<MaintenanceLogWithRelations[] | null> {
     const supabase = await createClient()
     const { data, error } = await supabase
         .from("maintenance_logs")
@@ -173,10 +180,10 @@ export async function getAllMaintenanceLogsAction(): Promise<any[] | null> {
     return data
 }
 
-export async function addMaintenanceLogAction(prevState: any, formData: FormData) {
+export async function addMaintenanceLogAction(prevState: ActionState, formData: FormData) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    const payload: any = {
+    const payload: MaintenanceLogInsert = {
         computer_id: formData.get("computer_id") as string,
         action_taken: formData.get("action_taken") as string,
         maintenance_type: (formData.get("maintenance_type") as string) || "corrective",
@@ -207,7 +214,7 @@ export async function deleteMaintenanceLogAction(id: string) {
 // PREVENTIVE SCHEDULE
 //------------------------------------------------------------------------------
 
-export async function getAllPreventiveScheduleAction(): Promise<any[] | null> {
+export async function getAllPreventiveScheduleAction(): Promise<PreventiveScheduleWithRelations[] | null> {
     const supabase = await createClient()
     const { data, error } = await supabase
         .from("preventive_schedule")
@@ -217,7 +224,7 @@ export async function getAllPreventiveScheduleAction(): Promise<any[] | null> {
     return data
 }
 
-export async function addPreventiveScheduleAction(prevState: any, formData: FormData) {
+export async function addPreventiveScheduleAction(prevState: ActionState, formData: FormData) {
     const supabase = await createClient()
     const payload = {
         computer_id: formData.get("computer_id") as string,
@@ -246,20 +253,20 @@ export async function deletePreventiveScheduleAction(id: string) {
 // PROFILES / USERS
 //------------------------------------------------------------------------------
 
-export async function getAllProfilesAction(): Promise<any[] | null> {
+export async function getAllProfilesAction(): Promise<ProfileWithEmail[] | null> {
     const supabase = await createClient()
     const { data, error } = await supabase.from("profiles").select("*").order("full_name", { ascending: true })
     if (error) throw new Error(error.message)
     return data
 }
 
-export async function getCurrentUserProfileAction(): Promise<any | null> {
+export async function getCurrentUserProfileAction(): Promise<ProfileWithEmail | null> {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return null
     const { data, error } = await supabase.from("profiles").select("*").eq("id", user.id).single()
     if (error) return null
-    return { ...data, email: user.email }
+    return { ...data, email: user.email ?? null, last_sign_in: null }
 }
 
 export async function updateProfileRoleAction(userId: string, role: string) {
@@ -272,7 +279,7 @@ export async function updateProfileRoleAction(userId: string, role: string) {
 // DASHBOARD STATS
 //------------------------------------------------------------------------------
 
-export async function getDashboardStatsAction() {
+export async function getDashboardStatsAction(): Promise<DashboardStats> {
     const supabase = await createClient()
     const [computers, faultReports, maintenanceLogs, labs, schedules] = await Promise.all([
         supabase.from("computers").select("id, status"),
@@ -308,7 +315,7 @@ export async function getDashboardStatsAction() {
 // REPORT DATA
 //------------------------------------------------------------------------------
 
-export async function getReportDataAction(from?: string, to?: string, labId?: string) {
+export async function getReportDataAction(from?: string, to?: string, labId?: string): Promise<ReportFilteredData> {
     const supabase = await createClient()
     let logsQuery = supabase
         .from("maintenance_logs")
@@ -336,9 +343,9 @@ export async function getReportDataAction(from?: string, to?: string, labId?: st
     let filteredComputers = computers.data ?? []
 
     if (labId) {
-        filteredLogs = filteredLogs.filter((l: any) => l.computers?.lab_id === labId)
-        filteredFaults = filteredFaults.filter((f: any) => f.computers?.lab_id === labId)
-        filteredComputers = filteredComputers.filter((c: any) => c.lab_id === labId)
+        filteredLogs = filteredLogs.filter((l) => (l.computers as { lab_id?: string } | null)?.lab_id === labId)
+        filteredFaults = filteredFaults.filter((f) => (f.computers as { lab_id?: string } | null)?.lab_id === labId)
+        filteredComputers = filteredComputers.filter((c) => (c as { lab_id?: string }).lab_id === labId)
     }
 
     return {

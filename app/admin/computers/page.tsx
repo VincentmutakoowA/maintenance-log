@@ -3,11 +3,15 @@
 import { useEffect, useState, useActionState } from "react"
 import {
     getAllComputersAction, getAllLaboratoriesAction, addComputerAction, deleteComputerAction,
-    updateComputerStatusAction, getAllProcessorTypesAction, getAllRamSizesAction,
+    getAllProcessorTypesAction, getAllRamSizesAction,
 } from "../actions"
-import { Plus, Pencil, Trash2, Monitor, X, ChevronDown } from "lucide-react"
+import { Plus, Pencil, Trash2, X } from "lucide-react"
+import {
+    SelectFieldProps, InputFieldProps, ChildrenProps, ComputerFormProps,
+    ComputerWithLab, Laboratory, ProcessorType, RamSize, ActionState, SelectOption,
+} from "@/lib/types"
 
-const GREEN = "#008e00"; const GREEN_LIGHT = "#d7e6d3"; const YELLOW = "#e6f10f"
+const GREEN = "#008e00"; const GREEN_LIGHT = "#d7e6d3";
 
 const STATUS_OPTS = [
     { value: "working",    label: "Working",    color: "#dcfce7", text: "#15803d" },
@@ -16,7 +20,7 @@ const STATUS_OPTS = [
     { value: "retired",    label: "Retired",    color: "#f3f4f6", text: "#6b7280" },
 ]
 
-const OS_OPTS = ["Windows 10","Windows 11","Ubuntu 20.04","Ubuntu 22.04","Ubuntu 24.04","macOS","ChromeOS","Other"]
+const OS_OPTS: SelectOption[] = ["Windows 10","Windows 11","Ubuntu 20.04","Ubuntu 22.04","Ubuntu 24.04","macOS","ChromeOS","Other"].map(o => ({ value: o, label: o }))
 
 function StatusBadge({ status }: { status: string }) {
     const s = STATUS_OPTS.find(o => o.value === status) ?? STATUS_OPTS[3]
@@ -37,30 +41,30 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
     )
 }
 
-function Select({ name, value, onChange, options, placeholder }: any) {
+function Select({ name, value, onChange, options, placeholder }: SelectFieldProps) {
     return (
         <select name={name} value={value} onChange={e => onChange(e.target.value)}
             style={{ width: "100%", border: `1px solid ${GREEN_LIGHT}`, borderRadius: 8, padding: "8px 10px", fontSize: 13.5, background: "#fff", fontFamily: "inherit", appearance: "auto" }}>
             <option value="">{placeholder}</option>
-            {options.map((o: any) => (
+            {options.map((o: SelectOption) => (
                 <option key={o.value ?? o} value={o.value ?? o}>{o.label ?? o}</option>
             ))}
         </select>
     )
 }
 
-function Input({ name, defaultValue, placeholder, type = "text", required }: any) {
+function Input({ name, defaultValue, placeholder, type = "text", required }: InputFieldProps) {
     return (
-        <input name={name} defaultValue={defaultValue} placeholder={placeholder} type={type} required={required}
+        <input name={name} defaultValue={defaultValue ?? undefined} placeholder={placeholder} type={type} required={required}
             style={{ width: "100%", border: `1px solid ${GREEN_LIGHT}`, borderRadius: 8, padding: "8px 10px", fontSize: 13.5, fontFamily: "inherit", outline: "none" }} />
     )
 }
 
-function Label({ children }: any) {
+function Label({ children }: ChildrenProps) {
     return <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 4 }}>{children}</label>
 }
 
-function ComputerForm({ computer, labs, processors, ramSizes, onClose, onSaved }: any) {
+function ComputerForm({ computer, labs, processors, ramSizes, onClose, onSaved }: ComputerFormProps) {
     const [state, formAction] = useActionState(addComputerAction, { success: false })
     const [labId, setLabId] = useState(computer?.lab_id ?? "")
     const [status, setStatus] = useState(computer?.status ?? "working")
@@ -69,8 +73,8 @@ function ComputerForm({ computer, labs, processors, ramSizes, onClose, onSaved }
     const [os, setOs] = useState(computer?.operating_system ?? "")
 
     useEffect(() => {
-        if ((state as any).success) { onSaved(); onClose() }
-    }, [state])
+        if ((state as ActionState).success) { onSaved(); onClose() }
+    }, [state, onSaved, onClose])
 
     return (
         <form action={formAction}>
@@ -88,19 +92,19 @@ function ComputerForm({ computer, labs, processors, ramSizes, onClose, onSaved }
                 <div>
                     <Label>Laboratory</Label>
                     <Select name="_lab_id" value={labId} onChange={setLabId} placeholder="Select lab"
-                        options={labs.map((l: any) => ({ value: l.id, label: l.lab_name }))} />
+                        options={labs.map((l: Laboratory) => ({ value: l.id, label: l.lab_name }))} />
                 </div>
 
                 <div>
                     <Label>Processor</Label>
                     <Select name="_processor" value={processor} onChange={setProcessor} placeholder="Select processor"
-                        options={processors.map((p: any) => ({ value: p.name, label: p.name }))} />
+                        options={processors.map((p: ProcessorType) => ({ value: p.name, label: p.name }))} />
                 </div>
 
                 <div>
                     <Label>RAM</Label>
                     <Select name="_ram" value={ram} onChange={setRam} placeholder="Select RAM"
-                        options={ramSizes.map((r: any) => ({ value: r.size, label: r.size }))} />
+                        options={ramSizes.map((r: RamSize) => ({ value: r.size, label: r.size }))} />
                 </div>
 
                 <div><Label>Storage</Label><Input name="storage" defaultValue={computer?.storage} placeholder="e.g. 256 GB SSD" /></div>
@@ -114,7 +118,7 @@ function ComputerForm({ computer, labs, processors, ramSizes, onClose, onSaved }
 
                 <div>
                     <Label>Status</Label>
-                    <Select name="_status" value={status} onChange={setStatus} placeholder="Select status"
+                    <Select name="_status" value={status} onChange={(v) => setStatus(v as typeof status)} placeholder="Select status"
                         options={STATUS_OPTS.map(s => ({ value: s.value, label: s.label }))} />
                 </div>
             </div>
@@ -130,13 +134,13 @@ function ComputerForm({ computer, labs, processors, ramSizes, onClose, onSaved }
 }
 
 export default function ComputersPage() {
-    const [computers, setComputers] = useState<any[]>([])
-    const [labs, setLabs] = useState<any[]>([])
-    const [processors, setProcessors] = useState<any[]>([])
-    const [ramSizes, setRamSizes] = useState<any[]>([])
+    const [computers, setComputers] = useState<ComputerWithLab[]>([])
+    const [labs, setLabs] = useState<Laboratory[]>([])
+    const [processors, setProcessors] = useState<ProcessorType[]>([])
+    const [ramSizes, setRamSizes] = useState<RamSize[]>([])
     const [loading, setLoading] = useState(true)
     const [showForm, setShowForm] = useState(false)
-    const [editing, setEditing] = useState<any>(null)
+    const [editing, setEditing] = useState<ComputerWithLab | null>(null)
     const [filterStatus, setFilterStatus] = useState("")
     const [filterLab, setFilterLab] = useState("")
     const [search, setSearch] = useState("")
@@ -149,7 +153,14 @@ export default function ComputersPage() {
         setLoading(false)
     }
 
-    useEffect(() => { load() }, [])
+    useEffect(() => {
+        Promise.all([
+            getAllComputersAction(), getAllLaboratoriesAction(), getAllProcessorTypesAction(), getAllRamSizesAction()
+        ]).then(([c, l, p, r]) => {
+            setComputers(c ?? []); setLabs(l ?? []); setProcessors(p ?? []); setRamSizes(r ?? [])
+            setLoading(false)
+        })
+    }, [])
 
     const handleDelete = async (id: string) => {
         if (!confirm("Delete this computer? This cannot be undone.")) return

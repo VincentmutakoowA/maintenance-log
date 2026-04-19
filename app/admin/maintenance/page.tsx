@@ -7,11 +7,16 @@ import {
     updatePreventiveScheduleStatusAction, deletePreventiveScheduleAction,
     getAllComputersAction, getAllFaultReportsAction,
 } from "../actions"
-import { Plus, X, Wrench, CalendarClock, Trash2, CheckCircle2 } from "lucide-react"
+import { Plus, X, CalendarClock, Trash2, CheckCircle2 } from "lucide-react"
+import {
+    ModalProps, ChildrenProps, SelectFieldProps, LogFormProps, ScheduleFormProps,
+    ComputerWithLab, FaultReportWithRelations, MaintenanceLogWithRelations,
+    PreventiveScheduleWithRelations, ActionState, SelectOption,
+} from "@/lib/types"
 
 const GREEN = "#008e00"; const GREEN_LIGHT = "#d7e6d3"
 
-function Modal({ title, onClose, children }: any) {
+function Modal({ title, onClose, children }: ModalProps) {
     return (
         <div style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgba(0,0,0,0.3)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
             <div style={{ background: "#fff", borderRadius: 14, width: "100%", maxWidth: 560, maxHeight: "90vh", overflow: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.15)" }}>
@@ -25,29 +30,29 @@ function Modal({ title, onClose, children }: any) {
     )
 }
 
-function FieldLabel({ children }: any) {
+function FieldLabel({ children }: ChildrenProps) {
     return <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 5 }}>{children}</label>
 }
 
-function FSelect({ name, value, onChange, options, placeholder, required }: any) {
+function FSelect({ name, value, onChange, options, placeholder, required }: SelectFieldProps) {
     return (
         <select name={name} value={value} onChange={e => onChange(e.target.value)} required={required}
             style={{ width: "100%", border: `1px solid ${GREEN_LIGHT}`, borderRadius: 8, padding: "8px 10px", fontSize: 13.5, fontFamily: "inherit", background: "#fff" }}>
             <option value="">{placeholder}</option>
-            {options.map((o: any) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            {options.map((o: SelectOption) => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
     )
 }
 
-function LogForm({ computers, faultReports, onClose, onSaved }: any) {
+function LogForm({ computers, faultReports, onClose, onSaved }: LogFormProps) {
     const [state, formAction] = useActionState(addMaintenanceLogAction, { success: false })
     const [computerId, setComputerId] = useState("")
     const [faultId, setFaultId] = useState("")
     const [mType, setMType] = useState("corrective")
 
-    useEffect(() => { if ((state as any).success) { onSaved(); onClose() } }, [state])
+    useEffect(() => { if ((state as ActionState).success) { onSaved(); onClose() } }, [state, onSaved, onClose])
 
-    const pendingFaults = faultReports.filter((r: any) => r.status !== "resolved")
+    const pendingFaults = faultReports.filter((r: FaultReportWithRelations) => r.status !== "resolved")
 
     return (
         <form action={formAction}>
@@ -58,12 +63,12 @@ function LogForm({ computers, faultReports, onClose, onSaved }: any) {
                 <div>
                     <FieldLabel>Computer *</FieldLabel>
                     <FSelect value={computerId} onChange={setComputerId} required placeholder="Select computer"
-                        options={computers.map((c: any) => ({ value: c.id, label: `${c.asset_tag} — ${c.laboratories?.lab_name ?? "No Lab"}` }))} />
+                        options={computers.map((c: ComputerWithLab) => ({ value: c.id, label: `${c.asset_tag} — ${c.laboratories?.lab_name ?? "No Lab"}` }))} />
                 </div>
                 <div>
                     <FieldLabel>Linked Fault Report (optional)</FieldLabel>
                     <FSelect value={faultId} onChange={setFaultId} placeholder="Select fault (optional)"
-                        options={pendingFaults.map((r: any) => ({ value: r.id, label: `${r.computers?.asset_tag ?? "?"} — ${r.description.slice(0, 50)}` }))} />
+                        options={pendingFaults.map((r: FaultReportWithRelations) => ({ value: r.id, label: `${r.computers?.asset_tag ?? "?"} — ${r.description.slice(0, 50)}` }))} />
                 </div>
                 <div>
                     <FieldLabel>Maintenance Type</FieldLabel>
@@ -107,10 +112,10 @@ function LogForm({ computers, faultReports, onClose, onSaved }: any) {
     )
 }
 
-function ScheduleForm({ computers, onClose, onSaved }: any) {
+function ScheduleForm({ computers, onClose, onSaved }: ScheduleFormProps) {
     const [state, formAction] = useActionState(addPreventiveScheduleAction, { success: false })
     const [computerId, setComputerId] = useState("")
-    useEffect(() => { if ((state as any).success) { onSaved(); onClose() } }, [state])
+    useEffect(() => { if ((state as ActionState).success) { onSaved(); onClose() } }, [state, onSaved, onClose])
     return (
         <form action={formAction}>
             <input type="hidden" name="computer_id" value={computerId} />
@@ -118,7 +123,7 @@ function ScheduleForm({ computers, onClose, onSaved }: any) {
                 <div>
                     <FieldLabel>Computer *</FieldLabel>
                     <FSelect value={computerId} onChange={setComputerId} required placeholder="Select computer"
-                        options={computers.map((c: any) => ({ value: c.id, label: `${c.asset_tag} — ${c.laboratories?.lab_name ?? ""}` }))} />
+                        options={computers.map((c: ComputerWithLab) => ({ value: c.id, label: `${c.asset_tag} — ${c.laboratories?.lab_name ?? ""}` }))} />
                 </div>
                 <div>
                     <FieldLabel>Scheduled Date *</FieldLabel>
@@ -144,10 +149,10 @@ function fmt(d: string) {
 }
 
 export default function MaintenancePage() {
-    const [logs, setLogs] = useState<any[]>([])
-    const [schedules, setSchedules] = useState<any[]>([])
-    const [computers, setComputers] = useState<any[]>([])
-    const [faultReports, setFaultReports] = useState<any[]>([])
+    const [logs, setLogs] = useState<MaintenanceLogWithRelations[]>([])
+    const [schedules, setSchedules] = useState<PreventiveScheduleWithRelations[]>([])
+    const [computers, setComputers] = useState<ComputerWithLab[]>([])
+    const [faultReports, setFaultReports] = useState<FaultReportWithRelations[]>([])
     const [loading, setLoading] = useState(true)
     const [showLogForm, setShowLogForm] = useState(false)
     const [showSchedForm, setShowSchedForm] = useState(false)
@@ -162,7 +167,15 @@ export default function MaintenancePage() {
         setLoading(false)
     }
 
-    useEffect(() => { load() }, [])
+    useEffect(() => {
+        Promise.all([
+            getAllMaintenanceLogsAction(), getAllPreventiveScheduleAction(),
+            getAllComputersAction(), getAllFaultReportsAction(),
+        ]).then(([l, s, c, f]) => {
+            setLogs(l ?? []); setSchedules(s ?? []); setComputers(c ?? []); setFaultReports(f ?? [])
+            setLoading(false)
+        })
+    }, [])
 
     if (loading) return <div style={{ textAlign: "center", padding: 60, color: "#6b7280" }}>Loading maintenance data...</div>
 
