@@ -32,24 +32,20 @@ export default function LoginPage() {
     }
 
     return (
-        <div style={{
+        <div className="flex flex-col sm:flex-row" style={{
             minHeight: "100vh",
             background: "#f7faf6",
-            display: "flex",
             fontFamily: "'DM Sans', system-ui, sans-serif",
-            
         }}>
             {/* Left panel */}
             <div style={{
                 width: "45%",
                 background: `linear-gradient(160deg, ${GREEN} 0%, #004d00 100%)`,
-                display: "flex",
-                flexDirection: "column",
                 justifyContent: "space-between",
                 padding: "48px 52px",
                 position: "relative",
                 overflow: "hidden",
-            }} className="hidden lg:flex">
+            }} className="hidden sm:flex sm:flex-col sm:justify-between">
 
                 {/* Background pattern */}
                 <svg style={{ position: "absolute", inset: 0, opacity: 0.06, pointerEvents: "none" }} width="100%" height="100%">
