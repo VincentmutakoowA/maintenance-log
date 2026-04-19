@@ -116,7 +116,7 @@ export default function ReportsPage() {
         <div style={{ maxWidth: 1100 }}>
             <style>{`@media print { .no-print { display: none !important; } }`}</style>
 
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+            <div className="page-hdr" style={{ marginBottom: 20 }}>
                 <div>
                     <div style={{ fontSize: 18, fontWeight: 700 }}>Reports</div>
                     <div style={{ fontSize: 13, color: "#6b7280" }}>Generate and download maintenance reports</div>
@@ -183,7 +183,7 @@ export default function ReportsPage() {
             </div>
 
             {/* Tabs + Download */}
-            <div className="no-print" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, borderBottom: `2px solid ${GREEN_LIGHT}`, paddingBottom: 0 }}>
+            <div className="no-print" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, borderBottom: `2px solid ${GREEN_LIGHT}`, paddingBottom: 0, flexWrap: "wrap", gap: 8 }}>
                 <div style={{ display: "flex" }}>
                     {(["maintenance", "faults", "inventory"] as const).map(t => (
                         <button key={t} onClick={() => setActiveTab(t)}
@@ -218,10 +218,10 @@ export default function ReportsPage() {
             {loading ? (
                 <div style={{ textAlign: "center", padding: 60, color: "#6b7280" }}>Loading report data...</div>
             ) : (
-                <div style={{ background: "#fff", border: `1px solid ${GREEN_LIGHT}`, borderRadius: 12, overflow: "hidden" }}>
+                <div style={{ background: "#fff", border: `1px solid ${GREEN_LIGHT}`, borderRadius: 12, overflowX: "auto" }}>
                     {activeTab === "maintenance" && (
                         <>
-                            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5 }}>
+                            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5, minWidth: 780 }}>
                                 <thead>
                                     <tr style={{ background: GREEN_LIGHT }}>
                                         {["Date", "Asset Tag", "Lab", "Technician", "Type", "Problem / Action", "Parts", "Cost (UGX)"].map(h => (
@@ -263,7 +263,7 @@ export default function ReportsPage() {
                     )}
 
                     {activeTab === "faults" && (
-                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5 }}>
+                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5, minWidth: 680 }}>
                             <thead>
                                 <tr style={{ background: GREEN_LIGHT }}>
                                     {["Date", "Asset Tag", "Lab", "Reported By", "Priority", "Status", "Description"].map(h => (
@@ -294,7 +294,7 @@ export default function ReportsPage() {
                     )}
 
                     {activeTab === "inventory" && (
-                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5 }}>
+                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5, minWidth: 680 }}>
                             <thead>
                                 <tr style={{ background: GREEN_LIGHT }}>
                                     {["Asset Tag", "Lab", "Processor", "RAM", "Storage", "OS", "Status", "Purchase Date"].map(h => (

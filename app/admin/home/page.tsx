@@ -69,7 +69,7 @@ export default function AdminHome() {
             <style>{`@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}`}</style>
 
             {/* Greeting */}
-            <div style={{ marginBottom: 24, background: `linear-gradient(135deg, ${GREEN} 0%, #005f00 100%)`, borderRadius: 14, padding: "20px 24px", color: "#fff", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ marginBottom: 24, background: `linear-gradient(135deg, ${GREEN} 0%, #005f00 100%)`, borderRadius: 14, padding: "20px 24px", color: "#fff", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
                 <div>
                     <div style={{ fontSize: 20, fontWeight: 700 }}>{greeting}</div>
                     <div style={{ fontSize: 13, opacity: 0.85, marginTop: 3 }}>
@@ -121,7 +121,7 @@ export default function AdminHome() {
             {(stats.pendingFaults + stats.inProgressFaults + stats.resolvedFaults) > 0 && (
                 <div style={{ background: "#fff", border: `1px solid ${GREEN_LIGHT}`, borderRadius: 12, padding: 20 }}>
                     <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 16, color: "#0f1a0f" }}>Fault Report Overview</div>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
+                    <div className="stat-grid-3">
                         {[
                             { label: "Pending", count: stats.pendingFaults, color: "#fef3c7", text: "#b45309" },
                             { label: "In Progress", count: stats.inProgressFaults, color: "#dbeafe", text: "#1d4ed8" },

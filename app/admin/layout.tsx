@@ -107,7 +107,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     return (
         <div style={{ display: "flex", minHeight: "100vh", background: "#f7faf6", fontFamily: "'DM Sans', system-ui, sans-serif" }}>
-            <div style={{ position: "sticky", top: 0, height: "100vh", overflow: "auto", display: "flex" }} className="hidden lg:flex">
+            <div style={{ position: "sticky", top: 0, height: "100vh", overflow: "auto" }} className="hidden lg:flex">
                 <Sidebar {...sidebarProps} />
             </div>
             {mobileOpen && <div style={{ position: "fixed", inset: 0, zIndex: 40, background: "rgba(0,0,0,0.25)" }} onClick={() => setMobileOpen(false)} />}

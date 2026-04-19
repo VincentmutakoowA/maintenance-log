@@ -287,7 +287,7 @@ export default function LoginPage() {
                     </div>
 
                     {/* Role legend */}
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+                    <div className="stat-grid-3" style={{ gap: 8 }}>
                         {[
                             { role: "Admin",      desc: "Full access",    color: GREEN,    bg: GREEN_LIGHT },
                             { role: "Technician", desc: "Log & maintain", color: "#b45309", bg: "#fef3c7" },

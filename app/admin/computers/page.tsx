@@ -180,7 +180,7 @@ export default function ComputersPage() {
 
     return (
         <div style={{ maxWidth: 1100 }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+            <div className="page-hdr" style={{ marginBottom: 18 }}>
                 <div>
                     <div style={{ fontSize: 18, fontWeight: 700 }}>Computer Inventory</div>
                     <div style={{ fontSize: 13, color: "#6b7280" }}>{computers.length} device{computers.length !== 1 ? "s" : ""} registered</div>
@@ -192,7 +192,7 @@ export default function ComputersPage() {
             </div>
 
             {/* Filters */}
-            <div style={{ display: "flex", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
+            <div className="filter-row" style={{ marginBottom: 16 }}>
                 <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by asset tag..."
                     style={{ border: `1px solid ${GREEN_LIGHT}`, borderRadius: 8, padding: "7px 12px", fontSize: 13, fontFamily: "inherit", flex: 1, minWidth: 160, outline: "none" }} />
                 <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
@@ -208,8 +208,8 @@ export default function ComputersPage() {
             </div>
 
             {/* Table */}
-            <div style={{ background: "#fff", border: `1px solid ${GREEN_LIGHT}`, borderRadius: 12, overflow: "hidden" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+            <div style={{ background: "#fff", border: `1px solid ${GREEN_LIGHT}`, borderRadius: 12, overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 700 }}>
                     <thead>
                         <tr style={{ background: GREEN_LIGHT }}>
                             {["Asset Tag","Laboratory","Processor","RAM","Storage","OS","Status","Actions"].map(h => (

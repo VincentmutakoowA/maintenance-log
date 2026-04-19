@@ -135,7 +135,7 @@ export default function FaultsPage() {
 
     return (
         <div style={{ maxWidth: 1000 }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+            <div className="page-hdr" style={{ marginBottom: 18 }}>
                 <div>
                     <div style={{ fontSize: 18, fontWeight: 700 }}>Fault Reports</div>
                     <div style={{ fontSize: 13, color: "#6b7280" }}>{faults.length} total reports</div>
@@ -147,7 +147,7 @@ export default function FaultsPage() {
             </div>
 
             {/* Summary cards */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, marginBottom: 18 }}>
+            <div className="stat-grid-3" style={{ marginBottom: 18 }}>
                 {[
                     { label: "Pending", count: counts.pending, bg: "#fef3c7", text: "#b45309" },
                     { label: "In Progress", count: counts.in_progress, bg: "#dbeafe", text: "#1d4ed8" },
@@ -161,7 +161,7 @@ export default function FaultsPage() {
             </div>
 
             {/* Filters */}
-            <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
+            <div className="filter-row" style={{ marginBottom: 14 }}>
                 <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
                     style={{ border: `1px solid ${GREEN_LIGHT}`, borderRadius: 8, padding: "7px 10px", fontSize: 13, fontFamily: "inherit", background: "#fff" }}>
                     <option value="">All Statuses</option>

@@ -181,12 +181,12 @@ export default function MaintenancePage() {
 
     return (
         <div style={{ maxWidth: 1050 }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+            <div className="page-hdr" style={{ marginBottom: 20 }}>
                 <div>
                     <div style={{ fontSize: 18, fontWeight: 700 }}>Maintenance</div>
                     <div style={{ fontSize: 13, color: "#6b7280" }}>{logs.length} logs · {schedules.length} scheduled tasks</div>
                 </div>
-                <div style={{ display: "flex", gap: 8 }}>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                     <button onClick={() => setShowSchedForm(true)}
                         style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", background: "#fff", color: GREEN, border: `1.5px solid ${GREEN}`, borderRadius: 8, cursor: "pointer", fontWeight: 600, fontSize: 13, fontFamily: "inherit" }}>
                         <CalendarClock size={14} /> Schedule
@@ -199,7 +199,7 @@ export default function MaintenancePage() {
             </div>
 
             {/* Tabs */}
-            <div style={{ display: "flex", gap: 0, marginBottom: 16, borderBottom: `2px solid ${GREEN_LIGHT}` }}>
+            <div className="tab-scroll" style={{ marginBottom: 16, borderBottom: `2px solid ${GREEN_LIGHT}`, display: "flex" }}>
                 {(["logs", "schedule"] as const).map(t => (
                     <button key={t} onClick={() => setTab(t)}
                         style={{ padding: "8px 20px", border: "none", background: "none", cursor: "pointer", fontSize: 13.5, fontWeight: tab === t ? 700 : 400, color: tab === t ? GREEN : "#6b7280", borderBottom: `2px solid ${tab === t ? GREEN : "transparent"}`, marginBottom: -2, fontFamily: "inherit", textTransform: "capitalize" }}>

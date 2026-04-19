@@ -91,7 +91,7 @@ export default function LaboratoriesPage() {
 
     return (
         <div style={{ maxWidth: 900 }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22 }}>
+            <div className="page-hdr" style={{ marginBottom: 22 }}>
                 <div>
                     <div style={{ fontSize: 18, fontWeight: 700 }}>Laboratories</div>
                     <div style={{ fontSize: 13, color: "#6b7280" }}>{labs.length} lab{labs.length !== 1 ? "s" : ""} · {computers.length} computers total</div>
@@ -145,7 +145,7 @@ export default function LaboratoriesPage() {
                                             ))}
                                         </div>
                                     </div>
-                                    <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0, marginLeft: 10 }}>
+                                    <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0, marginLeft: 10, flexWrap: "wrap" }}>
                                         <button onClick={() => { setEditing(lab); setShowForm(true) }}
                                             style={{ padding: "5px 10px", borderRadius: 7, border: `1px solid ${GREEN_LIGHT}`, background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontSize: 12.5, fontFamily: "inherit", color: GREEN, fontWeight: 600 }}>
                                             <Pencil size={12} /> Edit
@@ -166,8 +166,8 @@ export default function LaboratoriesPage() {
 
                                 {/* Expandable computer list */}
                                 {isOpen && labComputers.length > 0 && (
-                                    <div style={{ borderTop: `1px solid ${GREEN_LIGHT}`, padding: "0 0 0 0" }}>
-                                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                                    <div style={{ borderTop: `1px solid ${GREEN_LIGHT}`, overflowX: "auto" }}>
+                                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 560 }}>
                                             <thead>
                                                 <tr style={{ background: "#f7faf6" }}>
                                                     {["Asset Tag", "Processor", "RAM", "Storage", "OS", "Status"].map(h => (

@@ -216,7 +216,7 @@ export default function UsersPage() {
 
     return (
         <div style={{ maxWidth: 960 }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22 }}>
+            <div className="page-hdr" style={{ marginBottom: 22 }}>
                 <div>
                     <div style={{ fontSize: 18, fontWeight: 700 }}>User Management</div>
                     <div style={{ fontSize: 13, color: "#6b7280" }}>{users.length} registered user{users.length !== 1 ? "s" : ""}</div>
@@ -228,7 +228,7 @@ export default function UsersPage() {
             </div>
 
             {/* Role counts */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, marginBottom: 22 }}>
+            <div className="stat-grid-3" style={{ marginBottom: 22 }}>
                 {ROLES.map(r => {
                     const Icon = r.Icon; const count = counts[r.value as keyof typeof counts]
                     return (
@@ -246,11 +246,11 @@ export default function UsersPage() {
             </div>
 
             {/* Users table */}
-            <div style={{ background: "#fff", border: `1px solid ${GREEN_LIGHT}`, borderRadius: 12, overflow: "hidden" }}>
+            <div style={{ background: "#fff", border: `1px solid ${GREEN_LIGHT}`, borderRadius: 12, overflowX: "auto" }}>
                 {loading ? (
                     <div style={{ padding: 60, textAlign: "center", color: "#9ca3af" }}>Loading users...</div>
                 ) : (
-                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 720 }}>
                         <thead>
                             <tr style={{ background: GREEN_LIGHT }}>
                                 {["User", "Email", "Role", "Last Sign In", "Status", "Actions"].map(h => (

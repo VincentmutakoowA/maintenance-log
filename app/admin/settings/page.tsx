@@ -119,7 +119,7 @@ export default function SettingsPage() {
 
             <div style={{ background: "#fff", border: `1px solid ${GREEN_LIGHT}`, borderRadius: 14, padding: 20 }}>
                 <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 10 }}>About This System</div>
-                <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "6px 20px", fontSize: 13 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "6px 20px", fontSize: 13, wordBreak: "break-word" }}>
                     {[
                         ["System", "USJM Maintenance Log Management System"],
                         ["Institution", "University of Saint Joseph Mbarara"],
