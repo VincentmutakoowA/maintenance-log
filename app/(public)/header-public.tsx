@@ -50,12 +50,8 @@ export default function HeaderPublic() {
                 </div>
 
                 <div className="hidden lg:flex lg:gap-x-8 items-center">
-                    <Link href='/products'><Button variant="ghost">{PRODUCT_OR_SERVICE}</Button></Link>
-                    <Link href='/faults'><Button variant="ghost">Faults</Button></Link>
                     <Link href='/login'><Button variant="outline">Log in</Button></Link>
                 </div>
-
-
 
                 <div className="hidden lg:flex lg:flex-1 lg:justify-end">
                     <Link href='/search'> <Search className='w-5'></Search></Link>

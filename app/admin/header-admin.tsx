@@ -76,22 +76,12 @@ export default function HeaderAdmin() {
 
 
                         <button
-                            onClick={() => setMobileProductOpen((v) => !v)}
                             className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-base font-semibold text-gray-900 dark:text-white">
-                            More
-                            <ChevronDown className={`size-5 ${mobileProductOpen ? 'rotate-180' : ''}`} />
+                                <Link href='/'>
+                                    Home
+                                </Link>
                         </button>
-                        {mobileProductOpen &&
-                            [...products].map((item) => (
-                                <a
-                                    key={item.name}
-                                    href={item.href}
-                                    className="block rounded-lg px-6 py-2 text-sm font-semibold text-gray-900 dark:text-white"
-                                >
-                                    {item.name}
-                                </a>
-                            ))
-                        }
+
                         <ThemeSwitcher />
                         <Button variant="ghost" className="text-md font-bold" onClick={() => setSignOutOpen(true)}>Sign out</Button>
 
