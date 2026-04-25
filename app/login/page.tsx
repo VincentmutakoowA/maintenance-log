@@ -4,6 +4,7 @@ import { useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { Wrench, Eye, EyeOff, AlertCircle } from "lucide-react"
+import Image from "next/image"
 
 const GREEN = "#008e00"
 const GREEN_LIGHT = "#d7e6d3"
@@ -75,14 +76,22 @@ export default function LoginPage() {
 
                 {/* Logo */}
                 <div style={{ position: "relative" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }} className="flex flex-col">
                         <div style={{
-                            width: 44, height: 44,
+                            width: 200, height: 200,
                             background: YELLOW,
                             borderRadius: 12,
                             display: "flex", alignItems: "center", justifyContent: "center",
                         }}>
                             <Wrench size={22} color="#0f1a0f" />
+                            <Image
+                                src="/usjm-logo.png"
+                                alt="USJM Logo"
+                                width={200}
+                                height={200}
+                                className="rounded-xl"
+                            >
+                            </Image>
                         </div>
                         <div>
                             <div style={{ fontSize: 20, fontWeight: 800, color: "#fff", lineHeight: 1.1 }}>MaintainLog</div>
@@ -92,30 +101,32 @@ export default function LoginPage() {
                 </div>
 
                 {/* Main copy */}
-                <div style={{ position: "relative" }}>
-                    <div style={{
-                        display: "inline-block",
-                        background: YELLOW,
-                        color: "#0f1a0f",
-                        fontSize: 11,
-                        fontWeight: 700,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.1em",
-                        padding: "5px 12px",
-                        borderRadius: 6,
-                        marginBottom: 20,
-                    }}>
-                        Computer Lab Management
+                <div style={{ position: "relative" }} className="flex flex-col lg:flex-row gap-4">
+                    <div className="flex flex-col">
+                        <div style={{
+                            display: "inline-block",
+                            background: YELLOW,
+                            color: "#0f1a0f",
+                            fontSize: 11,
+                            fontWeight: 700,
+                            textTransform: "uppercase",
+                            letterSpacing: "0.1em",
+                            padding: "5px 12px",
+                            borderRadius: 6,
+                            marginBottom: 20,
+                        }}>
+                            Computer Lab Management
+                        </div>
+                        <h1 style={{
+                            fontSize: 38,
+                            fontWeight: 800,
+                            color: "#fff",
+                            lineHeight: 1.15,
+                            marginBottom: 18,
+                        }}>
+                            Centralised<br />maintenance<br />tracking.
+                        </h1>
                     </div>
-                    <h1 style={{
-                        fontSize: 38,
-                        fontWeight: 800,
-                        color: "#fff",
-                        lineHeight: 1.15,
-                        marginBottom: 18,
-                    }}>
-                        Centralised<br />maintenance<br />tracking.
-                    </h1>
                     <p style={{ fontSize: 15, color: "rgba(255,255,255,0.7)", lineHeight: 1.65, maxWidth: 320 }}>
                         Log faults, schedule preventive maintenance, and track every repair across all computer laboratories at USJM.
                     </p>
@@ -159,7 +170,13 @@ export default function LoginPage() {
                     {/* Mobile logo */}
                     <div className="lg:hidden" style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 36 }}>
                         <div style={{ width: 38, height: 38, background: GREEN, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            <Wrench size={18} color="#fff" />
+                            <Image
+                                src="/usjm-logo.png"
+                                alt="USJM Logo"
+                                width={44}
+                                height={44}
+                                className="rounded"
+                            ></Image>
                         </div>
                         <div>
                             <div style={{ fontSize: 17, fontWeight: 800, color: "#0f1a0f" }}>MaintainLog</div>
@@ -289,9 +306,9 @@ export default function LoginPage() {
                     {/* Role legend */}
                     <div className="stat-grid-3" style={{ gap: 8 }}>
                         {[
-                            { role: "Admin",      desc: "Full access",    color: GREEN,    bg: GREEN_LIGHT },
+                            { role: "Admin", desc: "Full access", color: GREEN, bg: GREEN_LIGHT },
                             { role: "Technician", desc: "Log & maintain", color: "#b45309", bg: "#fef3c7" },
-                            { role: "Staff",      desc: "Report faults",  color: "#2563eb", bg: "#dbeafe" },
+                            { role: "Staff", desc: "Report faults", color: "#2563eb", bg: "#dbeafe" },
                         ].map(r => (
                             <div key={r.role} style={{ background: r.bg, borderRadius: 9, padding: "10px 12px", textAlign: "center" }}>
                                 <div style={{ fontSize: 12, fontWeight: 700, color: r.color }}>{r.role}</div>
